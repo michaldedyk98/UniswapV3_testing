@@ -8,7 +8,7 @@ async function main() {
     await Scenario.AddLiquidity(-60, 60, 50, 50);
     console.log(r + "BEFORE SWAP" + w);
     await Scenario.PrintPoolData(2, 0);
-    await Scenario.SwapExact(100, 80);
+    await Scenario.SwapExactInput(100, 80);
     console.log(r + "AFTER SWAP" + w);
 
     await Scenario.PrintPoolData(2);

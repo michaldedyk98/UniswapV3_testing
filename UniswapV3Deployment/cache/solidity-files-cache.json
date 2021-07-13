@@ -502,6 +502,1294 @@
       "artifacts": [
         "UniswapKey"
       ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/DAIToken.sol": {
+      "lastModificationDate": 1626070432270,
+      "contentHash": "a00b712abf8fce73116f9aced625f6e3",
+      "sourceName": "contracts/DAIToken.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "DAIToken"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol": {
+      "lastModificationDate": 1626092679651,
+      "contentHash": "683b54445da8c95e82d8d8e20e81e544",
+      "sourceName": "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../access/AccessControl.sol",
+        "../utils/Context.sol",
+        "../token/ERC20/ERC20.sol",
+        "../token/ERC20/ERC20Burnable.sol",
+        "../token/ERC20/ERC20Pausable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20PresetMinterPauser"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
+      "lastModificationDate": 1626092679640,
+      "contentHash": "54eb0b53c109558e8312811342e95bf0",
+      "sourceName": "@openzeppelin/contracts/access/AccessControl.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/EnumerableSet.sol",
+        "../utils/Address.sol",
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "AccessControl"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1626092679643,
+      "contentHash": "2adbd82f6d055a4751566d4671512b03",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1626092679649,
+      "contentHash": "8065b340476f61365c076897199425f1",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/Context.sol",
+        "./IERC20.sol",
+        "../../math/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol": {
+      "lastModificationDate": 1626092679649,
+      "contentHash": "1603b7aab78c87467dde869fd19ec86b",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/Context.sol",
+        "./ERC20.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20Burnable"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol": {
+      "lastModificationDate": 1626092679650,
+      "contentHash": "42c0638e45b2c33154488610fe3091fe",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ERC20.sol",
+        "../../utils/Pausable.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20Pausable"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol": {
+      "lastModificationDate": 1626092679645,
+      "contentHash": "db7b1afdb2c204e1e52100b79f0c847e",
+      "sourceName": "@openzeppelin/contracts/utils/EnumerableSet.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "EnumerableSet"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/utils/Address.sol": {
+      "lastModificationDate": 1626092679640,
+      "contentHash": "7aa46886ff5abe7515496208a5e2ce5a",
+      "sourceName": "@openzeppelin/contracts/utils/Address.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.2 <0.8.0"
+      ],
+      "artifacts": [
+        "Address"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1626092679660,
+      "contentHash": "e0a41531d159d3a32f84b7a3ecf9fabb",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/math/SafeMath.sol": {
+      "lastModificationDate": 1626092679669,
+      "contentHash": "e03e12206057e809eb76c5f681170c32",
+      "sourceName": "@openzeppelin/contracts/math/SafeMath.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "SafeMath"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/utils/Pausable.sol": {
+      "lastModificationDate": 1626092679665,
+      "contentHash": "6960b40911542e6004ab95031ef9c3b9",
+      "sourceName": "@openzeppelin/contracts/utils/Pausable.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Context.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "Pausable"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/WETHToken.sol": {
+      "lastModificationDate": 1626070432269,
+      "contentHash": "29de1e4f091d6124f4315e007bd40e53",
+      "sourceName": "contracts/WETHToken.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "WETHToken"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/UniswapKey.sol": {
+      "lastModificationDate": 1626070432272,
+      "contentHash": "24d245a1e0d478036dc3fefcba06d3f6",
+      "sourceName": "contracts/UniswapKey.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "UniswapKey"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/contracts/AlphaStrategy.sol": {
+      "lastModificationDate": 1626076947304,
+      "contentHash": "625a4cfa58f49f7b0f56484ce83baea0",
+      "sourceName": "contracts/Alpha-Vaults/contracts/AlphaStrategy.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol",
+        "@uniswap/v3-core/contracts/libraries/TickMath.sol",
+        "./AlphaVault.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "AlphaStrategy"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol": {
+      "lastModificationDate": 1626070435359,
+      "contentHash": "e6badd8268772b99e7ca397aff11a965",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./pool/IUniswapV3PoolImmutables.sol",
+        "./pool/IUniswapV3PoolState.sol",
+        "./pool/IUniswapV3PoolDerivedState.sol",
+        "./pool/IUniswapV3PoolActions.sol",
+        "./pool/IUniswapV3PoolOwnerActions.sol",
+        "./pool/IUniswapV3PoolEvents.sol"
+      ],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3Pool"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/libraries/TickMath.sol": {
+      "lastModificationDate": 1626070435335,
+      "contentHash": "4f5ffb16fab77f864272409a7ba093f4",
+      "sourceName": "@uniswap/v3-core/contracts/libraries/TickMath.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "TickMath"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/contracts/AlphaVault.sol": {
+      "lastModificationDate": 1626076905235,
+      "contentHash": "39de02e5c908df6f25474676fd5261ff",
+      "sourceName": "contracts/Alpha-Vaults/contracts/AlphaVault.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/math/Math.sol",
+        "@openzeppelin/contracts/math/SafeMath.sol",
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol",
+        "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol",
+        "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol",
+        "@uniswap/v3-core/contracts/libraries/TickMath.sol",
+        "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol",
+        "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol",
+        "../interfaces/IVault.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "AlphaVault"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolImmutables.sol": {
+      "lastModificationDate": 1626070435380,
+      "contentHash": "e236e09a9d654fb2f20a6da5dba2bd2f",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolImmutables.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3PoolImmutables"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolState.sol": {
+      "lastModificationDate": 1626070435374,
+      "contentHash": "0488495ef9087b4513d3b43634035ef9",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolState.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3PoolState"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolDerivedState.sol": {
+      "lastModificationDate": 1626070435378,
+      "contentHash": "25b71180ec9f5132a158334971ee2ace",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolDerivedState.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3PoolDerivedState"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolActions.sol": {
+      "lastModificationDate": 1626070435370,
+      "contentHash": "83d338eb1394008c808a20ac7c5bab0c",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolActions.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3PoolActions"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolOwnerActions.sol": {
+      "lastModificationDate": 1626070435376,
+      "contentHash": "1b06ecc79e75f836c446ccf286e671e4",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolOwnerActions.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3PoolOwnerActions"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolEvents.sol": {
+      "lastModificationDate": 1626070435372,
+      "contentHash": "05abb59ec113db1046f7dadc78bb297b",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/pool/IUniswapV3PoolEvents.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3PoolEvents"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/math/Math.sol": {
+      "lastModificationDate": 1626092679665,
+      "contentHash": "e5c844515b04deabacef7eb872abc384",
+      "sourceName": "@openzeppelin/contracts/math/Math.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "Math"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/token/ERC20/SafeERC20.sol": {
+      "lastModificationDate": 1626092679668,
+      "contentHash": "33e22842646d746e5c4124c2fdc051aa",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "../../math/SafeMath.sol",
+        "../../utils/Address.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "SafeERC20"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+      "lastModificationDate": 1626092679667,
+      "contentHash": "1c60f58cee45c61469e1aea31e4dd879",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol": {
+      "lastModificationDate": 1626070435366,
+      "contentHash": "1b49846c9d15506134419bb3afa18bb7",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3MintCallback"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol": {
+      "lastModificationDate": 1626070435364,
+      "contentHash": "a8ba2d37b0107911ae0e3b0e123cbd83",
+      "sourceName": "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "IUniswapV3SwapCallback"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol": {
+      "lastModificationDate": 1626070435527,
+      "contentHash": "e040a720fab89989a06e1e6316b51f4b",
+      "sourceName": "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@uniswap/v3-core/contracts/libraries/FullMath.sol",
+        "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol"
+      ],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "LiquidityAmounts"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-periphery/contracts/libraries/PositionKey.sol": {
+      "lastModificationDate": 1626070435533,
+      "contentHash": "75d1e33f18d1694897fcca697b305049",
+      "sourceName": "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.5.0"
+      ],
+      "artifacts": [
+        "PositionKey"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/interfaces/IVault.sol": {
+      "lastModificationDate": 1626076840846,
+      "contentHash": "b95e3067c3fc16780d958968950b3ad8",
+      "sourceName": "contracts/Alpha-Vaults/interfaces/IVault.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "IVault"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/libraries/FullMath.sol": {
+      "lastModificationDate": 1626070435347,
+      "contentHash": "2249f1d495006bca342e9794c266d57e",
+      "sourceName": "@uniswap/v3-core/contracts/libraries/FullMath.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.0"
+      ],
+      "artifacts": [
+        "FullMath"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/node_modules/@uniswap/v3-core/contracts/libraries/FixedPoint96.sol": {
+      "lastModificationDate": 1626070435350,
+      "contentHash": "f3ab03d6bbfd7c6834ecd3fc311cb0e7",
+      "sourceName": "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.0"
+      ],
+      "artifacts": [
+        "FixedPoint96"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/contracts/PassiveStrategy.sol": {
+      "lastModificationDate": 1626076921092,
+      "contentHash": "014bb466f504d38fc329a24e031b3766",
+      "sourceName": "contracts/Alpha-Vaults/contracts/PassiveStrategy.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/math/SafeMath.sol",
+        "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol",
+        "@uniswap/v3-core/contracts/libraries/TickMath.sol",
+        "./AlphaVault.sol",
+        "../interfaces/IStrategy.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "PassiveStrategy"
+      ]
+    },
+    "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/interfaces/IStrategy.sol": {
+      "lastModificationDate": 1626076818688,
+      "contentHash": "7dfe2a22c5f68faa473a4554ff54c835",
+      "sourceName": "contracts/Alpha-Vaults/interfaces/IStrategy.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.9.0"
+      ],
+      "artifacts": [
+        "IStrategy"
+      ]
     }
   }
 }

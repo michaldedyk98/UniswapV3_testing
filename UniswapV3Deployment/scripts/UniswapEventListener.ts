@@ -1,31 +1,22 @@
 import { ethers } from "hardhat";
-import { Contract } from "@ethersproject/contracts";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { defaultPoolAddress, ethDefaultProvider, g, nonfungiblePositionManagerAddress, r, w } from "./config/config";
+import { alphaVaultABI, alphaVaultAddress, defaultPoolAddress, ethDefaultProvider, g, nonfungiblePositionManagerABI, nonfungiblePositionManagerAddress, poolABI, r, w } from "./config/config";
 
-const nonfungiblePositionManagerABI = [
-    "event IncreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)",
-    "event DecreaseLiquidity(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)",
-];
-
-const uniswapV3PoolABI = [
-    "event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)",
-    "event Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)"
-]
-
-let npmContract: Contract;
 let keyA: SignerWithAddress;
 
 async function main() {
     [keyA] = await ethers.getSigners();
     const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+    defaultProvider.pollingInterval = 1;
 
     try {
-        npmContract = new ethers.Contract(nonfungiblePositionManagerAddress, nonfungiblePositionManagerABI, defaultProvider);
-        const uniswapV3PoolContract = new ethers.Contract(defaultPoolAddress, uniswapV3PoolABI, defaultProvider);
+        const npmContract = new ethers.Contract(nonfungiblePositionManagerAddress, nonfungiblePositionManagerABI, defaultProvider);
+        const uniswapV3PoolContract = new ethers.Contract(defaultPoolAddress, poolABI, defaultProvider);
+        const alphaVaultContract = new ethers.Contract(alphaVaultAddress, alphaVaultABI, defaultProvider);
 
-        uniswapV3PoolContract.on("Burn", (owner, tickLower, tickUpper, amount, amount0, amount1) => {
+        uniswapV3PoolContract.on("Burn", (owner, tickLower, tickUpper, amount, amount0, amount1, event) => {
             console.log(g + "*********** [IncreaseLiquidity] ***********" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
             console.log("owner: " + r + owner + w)
             console.log("tickLower: " + r + tickLower + w)
             console.log("tickUpper: " + r + tickUpper + w)
@@ -35,8 +26,9 @@ async function main() {
             console.log(g + "*******************************************" + w)
         });
 
-        npmContract.on("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1) => {
+        npmContract.on("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
             console.log(g + "*********** [IncreaseLiquidity] ***********" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
             console.log("Token ID: " + r + tokenId + w)
             console.log("Liquidity: " + r + liquidity + w)
             console.log("Amount0: " + r + amount0 + w)
@@ -44,8 +36,9 @@ async function main() {
             console.log(g + "*******************************************" + w)
         });
 
-        npmContract.on("DecreaseLiquidity", (tokenId, liquidity, amount0, amount1) => {
+        npmContract.on("DecreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
             console.log(g + "*********** [DecreaseLiquidity] ***********" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
             console.log("Token ID: " + r + tokenId + w)
             console.log("Liquidity: " + r + liquidity + w)
             console.log("Amount0: " + r + amount0 + w)
@@ -53,8 +46,9 @@ async function main() {
             console.log(g + "*******************************************" + w)
         });
 
-        uniswapV3PoolContract.on("Swap", (sender, recipient, amount0, amount1, sqrtPriceX96, liquidity, tick) => {
+        uniswapV3PoolContract.on("Swap", (sender, recipient, amount0, amount1, sqrtPriceX96, liquidity, tick, event) => {
             console.log(g + "***************** [Swap] *****************" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
             console.log("Sender: " + r + sender + w)
             console.log("Recipient: " + r + recipient + w)
             console.log("Amount0: " + r + amount0 + w)
@@ -62,6 +56,48 @@ async function main() {
             console.log("SqrtPriceX96: " + r + sqrtPriceX96 + w)
             console.log("Liquidity: " + r + liquidity + w)
             console.log("Tick: " + r + tick + w)
+            console.log(g + "*******************************************" + w)
+        });
+
+        alphaVaultContract.on("Deposit", async (sender, to, shares, amount0, amount1, event) => {
+            console.log(g + "***************** [Deposit] *****************" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
+            console.log("Sender: " + r + sender + w)
+            console.log("To: " + r + to + w)
+            console.log("Shares: " + r + shares + w)
+            console.log("Amount0: " + r + amount0 + w)
+            console.log("Amount1: " + r + amount1 + w)
+            console.log(g + "*******************************************" + w)
+        });
+
+        alphaVaultContract.on("Withdraw", (sender, to, shares, amount0, amount1, event) => {
+            console.log(g + "***************** [Withdraw] *****************" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
+            console.log("Sender: " + r + sender + w)
+            console.log("To: " + r + to + w)
+            console.log("Shares: " + r + shares + w)
+            console.log("Amount0: " + r + amount0 + w)
+            console.log("Amount1: " + r + amount1 + w)
+            console.log(g + "*******************************************" + w)
+        });
+
+        alphaVaultContract.on("CollectFees", (feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1, event) => {
+            console.log(g + "***************** [CollectFees] *****************" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
+            console.log("FeesToVault0: " + r + feesToVault0 + w)
+            console.log("FeesToVault1: " + r + feesToVault1 + w)
+            console.log("FeesToProtocol0: " + r + feesToProtocol0 + w)
+            console.log("FeesToProtocol1: " + r + feesToProtocol1 + w)
+            console.log(g + "*******************************************" + w)
+        });
+
+        alphaVaultContract.on("Snapshot", (tick, totalAmount0, totalAmount1, totalSupply, event) => {
+            console.log(g + "***************** [Snapshot] *****************" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
+            console.log("Tick: " + r + tick + w)
+            console.log("TotalAmount0: " + r + totalAmount0 + w)
+            console.log("TotalAmount1: " + r + totalAmount1 + w)
+            console.log("TotalSupply: " + r + totalSupply + w)
             console.log(g + "*******************************************" + w)
         });
     } catch (err) {

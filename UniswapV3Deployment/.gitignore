@@ -1,0 +1,10 @@
+node_modules/
+cache/
+cache/solidity-files-cache.json
+typechain/
+.deps/
+package-lock.json
+yarn.lock
+artifacts/
+typechain/
+deployments/
