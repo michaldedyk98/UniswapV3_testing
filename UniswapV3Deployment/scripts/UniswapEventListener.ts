@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { alphaVaultABI, alphaVaultAddress, defaultPoolAddress, ethDefaultProvider, g, nonfungiblePositionManagerABI, nonfungiblePositionManagerAddress, poolABI, r, w } from "./config/config";
+import { alphaVaultABI, ethDefaultProvider, g, nonfungiblePositionManagerABI, poolABI, r, w } from "./config/config";
+import { getContract } from "./config/contracts";
 
 let keyA: SignerWithAddress;
 
@@ -10,12 +11,21 @@ async function main() {
     defaultProvider.pollingInterval = 1;
 
     try {
-        const npmContract = new ethers.Contract(nonfungiblePositionManagerAddress, nonfungiblePositionManagerABI, defaultProvider);
-        const uniswapV3PoolContract = new ethers.Contract(defaultPoolAddress, poolABI, defaultProvider);
-        const alphaVaultContract = new ethers.Contract(alphaVaultAddress, alphaVaultABI, defaultProvider);
+        const npmContract = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
+        const uniswapV3PoolContract = new ethers.Contract(getContract('defaultPoolAddress'), poolABI, defaultProvider);
+        const alphaVaultContract = new ethers.Contract(getContract('alphaVaultAddress'), alphaVaultABI, defaultProvider);
+
+        alphaVaultContract.on("LogData", (tickLower, tickUpper, liquidity, event) => {
+            console.log(g + "*********** [LogData] ***********" + w)
+            console.log("Tx: " + r + event.transactionHash + w)
+            console.log("tickLower: " + r + tickLower + w)
+            console.log("tickUpper: " + r + tickUpper + w)
+            console.log("liquidity: " + r + liquidity + w)
+            console.log(g + "*******************************************" + w)
+        });
 
         uniswapV3PoolContract.on("Burn", (owner, tickLower, tickUpper, amount, amount0, amount1, event) => {
-            console.log(g + "*********** [IncreaseLiquidity] ***********" + w)
+            console.log(g + "*********** [Burn] ***********" + w)
             console.log("Tx: " + r + event.transactionHash + w)
             console.log("owner: " + r + owner + w)
             console.log("tickLower: " + r + tickLower + w)

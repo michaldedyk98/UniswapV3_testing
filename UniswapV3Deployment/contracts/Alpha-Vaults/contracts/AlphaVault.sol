@@ -79,6 +79,8 @@ contract AlphaVault is
     uint256 public accruedProtocolFees0;
     uint256 public accruedProtocolFees1;
 
+    event LogData(int24 tickLower, int24 tickUpper, uint128 liquidity);
+
     /**
      * @dev After deploying, strategy needs to be set via `setStrategy()`
      * @param _pool Underlying Uniswap V3 pool
@@ -167,11 +169,21 @@ contract AlphaVault is
     /// @dev Do zero-burns to poke a position on Uniswap so earned fees are
     /// updated. Should be called if total amounts needs to include up-to-date
     /// fees.
-    function _poke(int24 tickLower, int24 tickUpper) internal {
+    function _poke(int24 tickLower, int24 tickUpper) public {
         (uint128 liquidity, , , , ) = _position(tickLower, tickUpper);
+
+        emit LogData(tickLower, tickUpper, liquidity);
         if (liquidity > 0) {
             pool.burn(tickLower, tickUpper, 0);
         }
+    }
+
+    function getLiquidityAt(int24 tickLower, int24 tickUpper)
+        external
+        view
+        returns (uint128 liquidity)
+    {
+        (liquidity, , , , ) = _position(tickLower, tickUpper);
     }
 
     /// @dev Calculates the largest possible `amount0` and `amount1` such that
@@ -321,7 +333,7 @@ contract AlphaVault is
         int24 _askLower,
         int24 _askUpper
     ) external nonReentrant {
-        require(msg.sender == strategy, "strategy");
+        //require(msg.sender == strategy, "strategy");
         _checkRange(_baseLower, _baseUpper);
         _checkRange(_bidLower, _bidUpper);
         _checkRange(_askLower, _askUpper);

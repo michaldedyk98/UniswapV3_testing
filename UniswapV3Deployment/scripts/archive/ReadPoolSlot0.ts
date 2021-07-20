@@ -1,8 +1,7 @@
-import { ticksToRead } from "../config/config";
 import { Scenario } from "../ScenarioFunctions";
 
 async function main() {
-    await Scenario.PrintPoolData(ticksToRead);
+    await Scenario.PrintPoolData(0);
 }
 main()
     .then(() => process.exit(0))
