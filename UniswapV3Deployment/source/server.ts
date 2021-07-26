@@ -3,9 +3,9 @@ import express, { Express, request } from 'express';
 import morgan from 'morgan';
 import routes from './routes/vault';
 import { client } from '../scripts/config/db';
+import { delay } from '../scripts/config/config';
 import { keyBy } from 'lodash';
 import { setContracts } from "../scripts/config/contracts";
-import { CronJob } from 'cron';
 import internal from './controllers/internal';
 
 /** Express API router */
@@ -46,25 +46,13 @@ async function main() {
     const resultKeyBy = keyBy(result.rows, 'contract');
     setContracts(resultKeyBy);
 
-    /** Cron jobs */
-    var rebalanceJob = new CronJob('0 * * * *', async () => {
-        try {
-            await internal.rebalance({}, 1);
-        }
-        catch (err) {
-            console.error('[CRON 1H] Failed to rebalance', err)
-        }
-    }, null, true);
-    rebalanceJob.start();
-
     /** Server */
     const httpServer = http.createServer(router);
     const PORT: any = process.env.PORT ?? 6060;
-    httpServer.listen(PORT, () => console.log(`Vault server is running on port: ${PORT}`));
+    httpServer.listen(PORT, async () => {
+        console.log(`Vault server is running on port: ${PORT}`)
+    });
 }
-
-//const result = await client.query('SELECT * FROM pair_data WHERE timestamp = $1', [1586995200000])
-
 
 main()
     .catch((error) => {

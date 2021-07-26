@@ -51,9 +51,6 @@ task("deploy-local", "UniswapV3 local deployment")
     await WETHToken.connect(keyA).approve(uniswapContracts["router"].address, tokenDefaultBalance.mul(1000));
     await DAIToken.connect(keyA).approve(uniswapContracts["router"].address, tokenDefaultBalance.mul(1000));
 
-    // const token0 = WETHToken.address > DAIToken.address ? DAIToken.address : WETHToken.address;
-    // const token1 = WETHToken.address > DAIToken.address ? WETHToken.address : DAIToken.address;
-
     const token0 = WETHToken.address;
     const token1 = DAIToken.address;
 
@@ -69,6 +66,18 @@ task("deploy-local", "UniswapV3 local deployment")
     const UniswapV3PoolAddress = await uniswapContracts["factory"].getPool(WETHToken.address, DAIToken.address, feeTier);
     const uniswapV3Pool = new ethers.Contract(UniswapV3PoolAddress, poolABI, defaultProvider);
     await uniswapV3Pool.connect(keyA).increaseObservationCardinalityNext(150);
+
+    const UniswapBoosterFactory = await ethers.getContractFactory("UniswapBooster");
+    let UniswapBooster = await UniswapBoosterFactory.connect(keyA).deploy(
+      uniswapContracts["positionManager"].address,
+      UniswapV3PoolAddress,
+      3000,
+      20
+    );
+    await UniswapBooster.deployed();
+
+    await WETHToken.connect(keyA).approve(UniswapBooster.address, tokenDefaultBalance.mul(1000));
+    await DAIToken.connect(keyA).approve(UniswapBooster.address, tokenDefaultBalance.mul(1000));
 
     const AlphaVaultFactory = await ethers.getContractFactory("AlphaVault");
     const AlphaVault0 = await AlphaVaultFactory.connect(keyA).deploy(
@@ -92,7 +101,7 @@ task("deploy-local", "UniswapV3 local deployment")
     await DAIToken.connect(keyA).approve(AlphaVault1.address, tokenDefaultBalance);
 
     const AVStrategyFactory = await ethers.getContractFactory("PassiveStrategy");
-    const AVStrategy = await AVStrategyFactory.connect(keyA).deploy(
+    const AVStrategy0 = await AVStrategyFactory.connect(keyA).deploy(
       AlphaVault0.address,
       baseThreshold,
       limitThreshold,
@@ -102,9 +111,22 @@ task("deploy-local", "UniswapV3 local deployment")
       durationTWAP,
       keyA.address
     );
-    await AVStrategy.deployed();
-    await AlphaVault0.connect(keyA).setStrategy(AVStrategy.address);
-    await AlphaVault1.connect(keyA).setStrategy(AVStrategy.address);
+    await AVStrategy0.deployed();
+
+    const AVStrategy1 = await AVStrategyFactory.connect(keyA).deploy(
+      AlphaVault1.address,
+      baseThreshold,
+      limitThreshold,
+      periodAlphaVault,
+      minTickMove,
+      maxTWAPDeviation,
+      durationTWAP,
+      keyA.address
+    );
+    await AVStrategy1.deployed();
+
+    await AlphaVault0.connect(keyA).setStrategy(AVStrategy0.address);
+    await AlphaVault1.connect(keyA).setStrategy(AVStrategy1.address);
 
     const table = new Table({
       head: ["Contract", "Address"],
@@ -153,7 +175,8 @@ task("deploy-local", "UniswapV3 local deployment")
 
     table.push(["AlphaVault0", AlphaVault0.address])
     table.push(["AlphaVault1", AlphaVault1.address])
-    table.push(["AlphaVault-PassiveStrategy", AVStrategy.address])
+    table.push(["AlphaVault0-PassiveStrategy", AVStrategy0.address])
+    table.push(["AlphaVault1-PassiveStrategy", AVStrategy1.address])
     table.push(["WETH Token", WETHToken.address])
     table.push(["DAI Token", DAIToken.address])
     for (const item of Object.keys(uniswapContracts))
@@ -172,10 +195,14 @@ task("deploy-local", "UniswapV3 local deployment")
       ['uniswapKeyAddress', UniswapKey.address],
       ['alphaVaultAddress0', AlphaVault0.address],
       ['alphaVaultAddress1', AlphaVault1.address],
-      ['alphaVaultPassiveStrategyAddress', AVStrategy.address],
+      ['alphaVaultPassiveStrategyAddress0', AVStrategy0.address],
+      ['alphaVaultPassiveStrategyAddress1', AVStrategy1.address],
+      ['uniswapBooster', UniswapBooster.address],
       ['WETH', WETHToken.address],
       ['DAI', DAIToken.address],
     ];
+
+    await client.query(`DELETE FROM contracts;`)
 
     await client.query(format(`
       INSERT INTO contracts (contract, address)
@@ -211,9 +238,17 @@ module.exports = {
             }
           },
         },
-
         {
           version: "0.7.3",
+          settings: {
+            optimizer: {
+              enabled: true,
+              runs: 200
+            }
+          },
+        },
+        {
+          version: "0.7.5",
           settings: {
             optimizer: {
               enabled: true,

@@ -2,6 +2,8 @@ import express from 'express';
 import controller from '../controllers/vault';
 const router = express.Router();
 
+router.post('/boosterDepositNFT', controller.boosterDepositNFT);
+router.post('/boosterDeposit', controller.boosterDeposit);
 router.post('/deposit', controller.deposit);
 router.post('/withdraw', controller.withdraw);
 router.post('/rebalance', controller.rebalance);
@@ -13,6 +15,9 @@ router.post('/moveMarketTo', controller.moveMarketTo);
 router.post('/getTVL', controller.getTVL);
 router.post('/getAlphaVaultTVL', controller.getAlphaVaultTVL);
 router.post('/getPriceImpactTVL', controller.getPriceImpactTVL);
+router.post('/deployAlphaVault', controller.deployAlphaVault);
+router.post('/processTransactions', controller.processTransactions);
+router.post('/addLiquidity', controller.addLiquidity);
 
 router.get('/getAlphaVaultData', controller.getAlphaVaultData);
 router.get('/getTicksData', controller.getTicksData);
@@ -24,5 +29,6 @@ router.get('/getTotalAmounts', controller.getTotalAmounts);
 router.get('/poke', controller.poke);
 router.get('/getBalanceOf', controller.getBalanceOf);
 router.get('/getLiquidityAt', controller.getLiquidityAt);
+router.get('/getBoosterPosition', controller.getBoosterPosition);
 
 export = router;

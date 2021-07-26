@@ -1,7 +1,10 @@
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { alphaVaultABI, ethDefaultProvider, g, nonfungiblePositionManagerABI, poolABI, r, w } from "./config/config";
-import { getContract } from "./config/contracts";
+import { getContract, setContracts } from "./config/contracts";
+import { client, dbConfig } from "./config/db";
+import { keyBy } from "lodash";
+import { Client } from "pg"
 
 let keyA: SignerWithAddress;
 
@@ -10,10 +13,20 @@ async function main() {
     const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
     defaultProvider.pollingInterval = 1;
 
+    const dbClient: Client = new Client(dbConfig);
+
     try {
+        await dbClient.connect();
+
+        const result = await dbClient.query('SELECT * FROM contracts')
+        const resultKeyBy = keyBy(result.rows, 'contract');
+        setContracts(resultKeyBy);
+
+        await dbClient.end();
+
         const npmContract = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
         const uniswapV3PoolContract = new ethers.Contract(getContract('defaultPoolAddress'), poolABI, defaultProvider);
-        const alphaVaultContract = new ethers.Contract(getContract('alphaVaultAddress'), alphaVaultABI, defaultProvider);
+        const alphaVaultContract = new ethers.Contract(getContract('alphaVaultAddress0'), alphaVaultABI, defaultProvider);
 
         alphaVaultContract.on("LogData", (tickLower, tickUpper, liquidity, event) => {
             console.log(g + "*********** [LogData] ***********" + w)
@@ -111,6 +124,7 @@ async function main() {
             console.log(g + "*******************************************" + w)
         });
     } catch (err) {
+        dbClient.end();
         console.log(err);
     }
 }

@@ -36,6 +36,40 @@ const getTicksData = async (req: Request, res: Response, next: NextFunction) => 
     }
 };
 
+// Adds liquidity to uniswap using nonfungiblePositionManager
+const addLiquidity = async (req: Request, res: Response, next: NextFunction) => {
+    let tickLower: string = req.body.tickLower;
+    let tickUpper: string = req.body.tickUpper;
+    let amount0: string = req.body.amount0;
+    let amount1: string = req.body.amount1;
+
+    if (!(tickLower && tickUpper && amount0 && amount1)) {
+        log('addLiquidity', 'Parameter tickLower, tickUpper, amount0, amount1 is required', req.body, {})
+
+        return res.status(400).json({ message: 'Parameter tickLower, tickUpper, amount0, amount1 is required' });
+    }
+
+    try {
+        const result = await Scenario.AddLiquidity(
+            Number(tickLower),
+            Number(tickUpper),
+            BigNumber.from(amount0),
+            BigNumber.from(amount1),
+        );
+
+        log('addLiquidity', 'Success', req.body, result)
+
+        return res.status(200).json(result);
+    } catch (err) {
+        log('addLiquidity', 'Failed to add liquidity using nonfungiblePositionManager', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to add liquidity using nonfungiblePositionManager',
+            error: err
+        });
+    }
+};
+
 // Deposits tokens into Alpha Vault
 const deposit = async (req: Request, res: Response, next: NextFunction) => {
     let amount0Desired: string = req.body.amount0Desired;
@@ -73,6 +107,68 @@ const deposit = async (req: Request, res: Response, next: NextFunction) => {
 
         return res.status(500).json({
             message: 'Failed to deposit',
+            error: err
+        });
+    }
+};
+
+// Deposits tokens into uniswap booster
+const boosterDeposit = async (req: Request, res: Response, next: NextFunction) => {
+    let amount0Desired: string = req.body.amount0Desired;
+    let amount1Desired: string = req.body.amount1Desired;
+    let baseLower: string = req.body.baseLower;
+    let baseUpper: string = req.body.baseUpper;
+
+    if (!(amount0Desired != null && amount1Desired != null && baseLower != null && baseUpper != null)) {
+        log('boosterDeposit', 'Parameter amount0Desired, amount1Desired, baseLower, baseUpper is required', req.body, {})
+
+        return res.status(400).json({ message: 'Parameter amount0Desired, amount1Desired, baseLower, baseUpper is required' });
+    }
+
+    try {
+        const depositResult = await Scenario.BoosterDeposit(
+            Number(baseLower),
+            Number(baseUpper),
+            BigNumber.from(amount0Desired),
+            BigNumber.from(amount1Desired),
+        );
+
+        log('boosterDeposit', 'Success', req.body, depositResult)
+
+        return res.status(200).json(depositResult);
+    } catch (err) {
+        log('boosterDeposit', 'Failed to deposit', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to deposit',
+            error: err
+        });
+    }
+};
+
+// Deposits NFT token into uniswap booster
+const boosterDepositNFT = async (req: Request, res: Response, next: NextFunction) => {
+    let tokenId: string = req.body.tokenId;
+
+    if (!(tokenId != null)) {
+        log('boosterDepositNFT', 'Parameter tokenId is required', req.body, {})
+
+        return res.status(400).json({ message: 'Parameter tokenId is required' });
+    }
+
+    try {
+        const depositResult = await Scenario.BoosterDepositNFT(
+            BigNumber.from(tokenId),
+        );
+
+        log('boosterDepositNFT', 'Success', req.body, depositResult)
+
+        return res.status(200).json(depositResult);
+    } catch (err) {
+        log('boosterDepositNFT', 'Failed to deposit', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to deposit NFT',
             error: err
         });
     }
@@ -302,6 +398,54 @@ const manualRebalance = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
+// Deploys new AlphaVault
+const deployAlphaVault = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const result = await Scenario.AddAlphaVault(
+        );
+
+        log('deployAlphaVault', 'Success', req.body, result)
+
+        return res.status(200).json(result);
+    } catch (err) {
+        log('deployAlphaVault', 'Failed to deploy alpha vault', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to deploy alpha vault',
+            error: err,
+        });
+    }
+};
+
+const processTransactions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!(req.query.offset && req.query.limit)) {
+            log('processTransactions', 'Parameter offset, limit is required', req.query, {})
+
+            return res.status(400).json({ message: 'Parameter offset, limit is required' });
+        }
+
+        const limit: number = Number(req.query.limit);
+        const offset: number = Number(req.query.offset);
+        let vault: number = Number(req.query.vault);
+
+        internal.processTransactions(limit, offset)
+
+        log('processTransactions', 'Success', req.query, {})
+
+        return res.status(200).json({
+            message: 'Success'
+        });
+    } catch (err) {
+        log('processTransactions', 'Failed to process transactions', req.query, err)
+
+        return res.status(500).json({
+            message: 'Failed to process transactions',
+            error: err
+        });
+    }
+};
+
 // Poke
 const poke = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -396,14 +540,7 @@ const getSlot0 = async (req: Request, res: Response, next: NextFunction) => {
 // Returns data (baseUpper, baseLower, etc.) from AlphaVault contract
 const getAlphaVaultData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!(req.query.vault != null)) {
-            log('getLiquidityAt', 'Parameter vault is required', req.query, {})
-
-            return res.status(400).json({ message: 'Parameter vault is required' });
-        }
-
-        let vault: number = Number(req.query.vault);
-        const alphaVaultData = await Scenario.GetAlphaVaultData(vault);
+        const alphaVaultData = await Scenario.GetAlphaVaultData();
 
         log('getAlphaVaultData', 'Success', req.query, alphaVaultData)
 
@@ -507,6 +644,31 @@ const getTotalAmounts = async (req: Request, res: Response, next: NextFunction) 
         });
     }
 };
+
+const getBoosterPosition = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!(req.query.tokenId != null)) {
+            log('getBoosterPosition', 'Parameter tokenId is required', req.query, {})
+
+            return res.status(400).json({ message: 'Parameter tokenId is required' });
+        }
+
+        const tokenId: number = Number(req.query.tokenId);
+        const positionAmounts = await Scenario.Positions(tokenId);
+
+        log('getBoosterPosition', 'Success', req.query, positionAmounts)
+
+        return res.status(200).json(positionAmounts);
+    } catch (err) {
+        log('getBoosterPosition', 'Failed to read positions from UniswapBooster contract', req.query, err)
+
+        return res.status(500).json({
+            message: 'Failed to read positions from UniswapBooster contract',
+            error: err
+        });
+    }
+};
+
 
 const getPositionAmounts = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -641,31 +803,31 @@ const getAlphaVaultTVL = async (req: Request, res: Response, next: NextFunction)
     let tick: number = req.body.tick;
     let vault: number = req.body.vault;
 
-    if (!((tick || tick == 0) && (vault != null))) {
-        log('getAlphaVaultTVL', 'Parameter tick, vault is required', req.body, {})
+    // if (!((tick || tick == 0) && (vault != null))) {
+    //     log('getAlphaVaultTVL', 'Parameter tick, vault is required', req.body, {})
 
-        return res.status(400).json({ message: 'Parameter tick, vault is required' });
-    }
+    //     return res.status(400).json({ message: 'Parameter tick, vault is required' });
+    // }
 
-    const alphaVaultData = await Scenario.GetAlphaVaultData(vault);
-    const ticks: number[] = [
-        alphaVaultData.baseLower,
-        alphaVaultData.baseUpper,
-        alphaVaultData.limitLower,
-        alphaVaultData.limitUpper
-    ];
+    // const alphaVaultData = await Scenario.GetAlphaVaultData(vault);
+    // const ticks: number[] = [
+    //     alphaVaultData.baseLower,
+    //     alphaVaultData.baseUpper,
+    //     alphaVaultData.limitLower,
+    //     alphaVaultData.limitUpper
+    // ];
 
-    const ticksSorted = ticks.sort((n1, n2) => n1 - n2)
+    // const ticksSorted = ticks.sort((n1, n2) => n1 - n2)
 
     try {
-        const tvl = await Scenario.GetTVL(
-            ticksSorted,
-            tick,
-        );
+        // const tvl = await Scenario.GetTVL(
+        //     ticksSorted,
+        //     tick,
+        // );
 
-        log('getAlphaVaultTVL', 'Success', req.body, tvl)
+        // log('getAlphaVaultTVL', 'Success', req.body, tvl)
 
-        return res.status(200).json(tvl);
+        return res.status(200).json({});
     } catch (err) {
         log('getAlphaVaultTVL', 'Failed to get TVL', req.body, err)
 
@@ -689,6 +851,9 @@ export default {
     getTVL,
     getAlphaVaultTVL,
     getPriceImpactTVL,
+    getBoosterPosition,
+    boosterDepositNFT,
+    boosterDeposit,
     deposit,
     withdraw,
     rebalance,
@@ -697,5 +862,8 @@ export default {
     swapExactOutput,
     emergencyBurn,
     poke,
-    moveMarketTo
+    moveMarketTo,
+    deployAlphaVault,
+    processTransactions,
+    addLiquidity,
 };

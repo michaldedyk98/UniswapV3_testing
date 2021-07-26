@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 contract DAIToken is ERC20PresetMinterPauser {
     uint8 private _decimals;
 
-    constructor(uint256 initialSupply, uint8 decimals)
+    constructor(uint256 initialSupply, uint8 decimals_)
         ERC20PresetMinterPauser("DAI Stable Coin", "DAI")
     {
-        _decimals = decimals;
+        _decimals = decimals_;
         _mint(msg.sender, initialSupply);
     }
 

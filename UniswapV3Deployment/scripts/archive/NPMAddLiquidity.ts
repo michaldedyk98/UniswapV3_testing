@@ -2,7 +2,7 @@ import { Scenario } from "../ScenarioFunctions";
 
 
 async function main() {
-    await Scenario.AddLiquidity(-120, 120);
+    //await Scenario.AddLiquidity(-120, 120);
 }
 
 main()

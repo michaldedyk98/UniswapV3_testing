@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish, FixedNumber, FixedFormat, parseFixed } from '@ethersproject/bignumber';
 import {
     r, g, w,
     ethDefaultProvider,
@@ -13,14 +13,24 @@ import {
     alphaVaultABI,
     maxGasLimit,
     ERC20TokenABI,
-    defaultDecDivider,
     feeTier,
     FEE_TIER_TO_TICK_SPACING,
-    PRICE_FIXED_DIGITS,
+    FIXED_DIGITS,
     MAX_UINT128,
     FEE_TIER_TO_FEE_AMOUNT,
     tickSpacing,
-    isBetween
+    isBetween,
+    protocolFee,
+    maxTotalSupply,
+    baseThreshold,
+    limitThreshold,
+    periodAlphaVault,
+    minTickMove,
+    maxTWAPDeviation,
+    durationTWAP,
+    tokenDefaultBalance,
+    baseToken,
+    uniswapBoosterABI
 } from "./config/config";
 import { TickData } from "./models/TickData";
 import { SwapResult } from "./models/SwapResult";
@@ -29,14 +39,76 @@ import { DepositResult } from "./models/DepositResult";
 import { Direction, PoolResult, PoolTickData, Tick, TickEntry, TickProcessed } from "./models/TVL";
 import keyBy from 'lodash.keyby'
 import { Dictionary } from 'lodash'
-import { CurrencyAmount, Token, Price } from '@uniswap/sdk-core'
-import { TickMath, tickToPrice, priceToClosestTick, Pool } from '@uniswap/v3-sdk'
+import { CurrencyAmount, Token, Price, Currency } from '@uniswap/sdk-core'
+import { TickMath, tickToPrice, priceToClosestTick, Pool, FullMath } from '@uniswap/v3-sdk'
 import { Decimal } from 'decimal.js';
-import { getContract } from "./config/contracts";
+import { addContract, getContract, getContracts } from "./config/contracts";
+import JSBI from "jsbi";
 
 var Fraction = require('fractional').Fraction
 
 export class Scenario {
+
+    static async AddAlphaVault(
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+
+        try {
+            const uniswapV3Pool = new ethers.Contract(getContract('defaultPoolAddress'), poolABI, defaultProvider);
+            const AlphaVaultFactory = await ethers.getContractFactory("AlphaVault");
+            const AlphaVault0 = await AlphaVaultFactory.connect(keyA).deploy(
+                uniswapV3Pool.address,
+                protocolFee,
+                maxTotalSupply,
+            );
+            await AlphaVault0.deployed();
+
+            const AVStrategyFactory = await ethers.getContractFactory("PassiveStrategy");
+            const AVStrategy0 = await AVStrategyFactory.connect(keyA).deploy(
+                AlphaVault0.address,
+                baseThreshold,
+                limitThreshold,
+                periodAlphaVault,
+                minTickMove,
+                maxTWAPDeviation,
+                durationTWAP,
+                keyA.address
+            );
+            await AVStrategy0.deployed();
+            const result = await AlphaVault0.connect(keyA).setStrategy(AVStrategy0.address);
+            await defaultProvider.waitForTransaction(result.hash);
+
+            const wethToken = new ethers.Contract(getContract('WETH')!, ERC20TokenABI, defaultProvider);
+            const daiToken = new ethers.Contract(getContract('DAI')!, ERC20TokenABI, defaultProvider);
+
+            const approve0Result = await wethToken.connect(keyA).approve(AlphaVault0.address, tokenDefaultBalance);
+            const approve1Result = await daiToken.connect(keyA).approve(AlphaVault0.address, tokenDefaultBalance);
+
+            await defaultProvider.waitForTransaction(approve0Result.hash)
+            await defaultProvider.waitForTransaction(approve1Result.hash)
+
+            const contracts = getContracts()
+            let i = 0;
+
+            while (!(contracts['alphaVaultAddress' + i] == null
+                && contracts['alphaVaultPassiveStrategyAddress' + i] == null)) {
+                i++
+            }
+
+            addContract('alphaVaultAddress' + i, AlphaVault0.address)
+            addContract('alphaVaultPassiveStrategyAddress' + i, AVStrategy0.address)
+
+            return {
+                vaultIndex: i
+            }
+        } catch (err) {
+            console.log(err);
+
+            throw err;
+        }
+    }
+
     static async SwapExactInput(amountIn: BigNumberish = 100, amountOutMinimum: BigNumberish = 50, tokenIn: string, tokenOut: string) {
         let [keyA, keyB] = await ethers.getSigners();
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
@@ -78,7 +150,7 @@ export class Scenario {
 
                 setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
-                }, 1000);
+                }, 5000);
             });
 
             return (await swapPromise) as SwapResult;
@@ -131,7 +203,7 @@ export class Scenario {
 
                 setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
-                }, 1000);
+                }, 5000);
             });
 
             await defaultProvider.waitForTransaction(result.hash);
@@ -143,25 +215,47 @@ export class Scenario {
         }
     }
 
-    static async AddLiquidity(tickLower: number, tickUpper: number, amount0: number = 100, amount1: number = 100) {
+    static async AddLiquidity(tickLower: number, tickUpper: number, amount0: BigNumberish, amount1: BigNumberish) {
         let [keyA] = await ethers.getSigners();
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        defaultProvider.pollingInterval = 1;
+
+        let timeoutHandle: NodeJS.Timeout;
 
         try {
             const recipientAddress = await keyA.getAddress();
             const blockTimestamp = (await defaultProvider.getBlock(await defaultProvider.getBlockNumber())).timestamp;
             const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
 
+            const snapshotPromise = new Promise((resolve, reject) => {
+                npm.on("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
+                    if (event.transactionHash == result?.hash) {
+                        event.removeListener();
+
+                        resolve({
+                            tokenId: tokenId.toString(),
+                            liquidity: liquidity.toString(),
+                            amount0: amount0.toString(),
+                            amount1: amount1.toString(),
+                        });
+                    }
+                });
+
+                timeoutHandle = setTimeout(() => {
+                    reject(new Error('Timeout while waiting for event'));
+                }, 5000);
+            });
+
             const result = await npm.connect(keyA).mint({
-                token0: getContract("WETH"),
-                token1: getContract("DAI"),
-                fee: 3000,
+                token0: getContract('WETH'),
+                token1: getContract('DAI'),
+                fee: feeTier,
                 tickLower: tickLower,
                 tickUpper: tickUpper,
-                amount0Desired: amount0, // ETH
-                amount1Desired: amount1, // DAI?
-                amount0Min: 0, // ETH
-                amount1Min: 0, // DAI
+                amount0Desired: amount0,
+                amount1Desired: amount1,
+                amount0Min: 0,
+                amount1Min: 0,
                 recipient: recipientAddress,
                 deadline: blockTimestamp + 1800
             },
@@ -169,8 +263,12 @@ export class Scenario {
             );
 
             await defaultProvider.waitForTransaction(result.hash);
+            return (await snapshotPromise);
         } catch (err) {
             console.log(err);
+
+            if (timeoutHandle!)
+                clearInterval(timeoutHandle!)
 
             throw err;
         }
@@ -207,14 +305,24 @@ export class Scenario {
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
 
         try {
-            const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
+            const npm = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
 
             const result = await npm.connect(keyA).positions(
                 tokenId,
                 { gasLimit: maxGasLimit }
             );
 
-            return result;
+            return {
+                operator: result.operator.toString(),
+                shares: result.uniswapShares,
+                amount0: result.amount0.toString(),
+                amount1: result.amount1.toString(),
+                tickLower: result.tickLower,
+                tickUpper: result.tickUpper,
+                liquidity: result.liquidity.toString(),
+                tokensOwed0: result.tokensOwed0.toString(),
+                tokensOwed1: result.tokensOwed1.toString()
+            }
         } catch (err) {
             console.log(err);
 
@@ -267,39 +375,46 @@ export class Scenario {
     static async Rebalance(vault: number) {
         let [keyA] = await ethers.getSigners();
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        defaultProvider.pollingInterval = 1;
+
+        let timeoutHandle: NodeJS.Timeout;
 
         try {
             const vaultAddress = `alphaVaultAddress${vault}`;
-            const passiveStrategy = new ethers.Contract(getContract('alphaVaultPassiveStrategyAddress'), passiveStrategyABI, defaultProvider);
-            const alphaVault = new ethers.Contract(getContract(vaultAddress), alphaVaultABI, defaultProvider);
+            const strategyAddress = `alphaVaultPassiveStrategyAddress${vault}`;
 
-            const result = await passiveStrategy.connect(keyA).rebalance(
-                { gasLimit: maxGasLimit }
-            );
+            const passiveStrategy = new ethers.Contract(getContract(strategyAddress), passiveStrategyABI, defaultProvider);
+            const alphaVault = new ethers.Contract(getContract(vaultAddress), alphaVaultABI, defaultProvider);
 
             const snapshotPromise = new Promise((resolve, reject) => {
                 alphaVault.once("Snapshot", (tick, totalAmount0, totalAmount1, totalSupply, event) => {
-                    //event.removeListener();
 
-                    if (event.transactionHash == result.hash)
+                    if (event.transactionHash == result?.hash)
                         resolve({
                             tickRebalance: tick,
                             totalAmount0: totalAmount0.toString(),
                             totalAmount1: totalAmount1.toString(),
                             totalSupply: totalSupply.toString(),
                         });
-                    else reject();
                 });
 
-                setTimeout(() => {
+                timeoutHandle = setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
-                }, 1000);
+                }, 5000);
             });
+
+            const result = await passiveStrategy.connect(keyA).rebalance(
+                { gasLimit: maxGasLimit }
+            );
+
 
             await defaultProvider.waitForTransaction(result.hash);
             return (await snapshotPromise) as RebalanceResult;
         } catch (err) {
             console.log(err);
+
+            if (timeoutHandle!)
+                clearInterval(timeoutHandle!)
 
             throw err;
         }
@@ -351,7 +466,7 @@ export class Scenario {
 
                 setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
-                }, 1000);
+                }, 5000);
             });
 
             await defaultProvider.waitForTransaction(result.hash);
@@ -401,13 +516,112 @@ export class Scenario {
 
                 setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
-                }, 1000);
+                }, 5000);
             });
 
             await defaultProvider.waitForTransaction(result.hash);
             return (await depositPromise) as DepositResult;
         } catch (err) {
             console.log(err);
+
+            throw err;
+        }
+    }
+
+    static async BoosterDeposit(
+        baseLower: number,
+        baseUpper: number,
+        amount0Desired: BigNumberish,
+        amount1Desired: BigNumberish,
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+
+        try {
+            const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
+
+            const result = await uniswapBooster.connect(keyA).deposit(
+                baseLower,
+                baseUpper,
+                amount0Desired,
+                amount1Desired,
+                { gasLimit: maxGasLimit }
+            );
+
+            const depositPromise = new Promise((resolve, reject) => {
+                uniswapBooster.once("Deposit", (sender, tokenId0, tokenId1, amount0, amount1, event) => {
+                    event.removeListener();
+
+                    if (event.transactionHash == result.hash)
+                        resolve({
+                            sender: sender.toString(),
+                            boosterTokenId: tokenId1.toString(),
+                            uniswapTokenId: tokenId0.toString(),
+                            amount0: amount0.toString(),
+                            amount1: amount1.toString()
+                        });
+                    else reject();
+                });
+
+                setTimeout(() => {
+                    reject(new Error('Timeout while waiting for event'));
+                }, 5000);
+            });
+
+            await defaultProvider.waitForTransaction(result.hash);
+            return (await depositPromise) as DepositResult;
+        } catch (err) {
+            console.log(err);
+
+            throw err;
+        }
+    }
+
+    static async BoosterDepositNFT(
+        tokenId: BigNumberish,
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        defaultProvider.pollingInterval = 1;
+        let timeoutHandle: NodeJS.Timeout;
+
+        try {
+            const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
+            const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
+            const resultApprove = await npm.connect(keyA).approve(uniswapBooster.address, tokenId);
+            await defaultProvider.waitForTransaction(resultApprove.hash);
+
+            const depositPromise = new Promise((resolve, reject) => {
+                uniswapBooster.on("DepositNFT", (sender, tokenId0, tokenId1, event) => {
+
+                    if (event.transactionHash == result?.hash) {
+                        event.removeListener();
+
+                        resolve({
+                            sender: sender.toString(),
+                            boosterTokenId: tokenId1.toString(),
+                            uniswapTokenId: tokenId0.toString(),
+                        });
+                    }
+                });
+
+                timeoutHandle = setTimeout(() => {
+                    reject(new Error('Timeout while waiting for event'));
+                }, 5000);
+            });
+
+            const result = await uniswapBooster.connect(keyA).depositNFT(
+                tokenId,
+                { gasLimit: maxGasLimit }
+            );
+
+            await defaultProvider.waitForTransaction(result.hash);
+            return (await depositPromise);
+        } catch (err) {
+            console.log(err);
+
+            if (timeoutHandle!)
+                clearInterval(timeoutHandle!)
 
             throw err;
         }
@@ -446,7 +660,7 @@ export class Scenario {
 
                 setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
-                }, 1000);
+                }, 5000);
             });
 
             await defaultProvider.waitForTransaction(result.hash);
@@ -580,8 +794,6 @@ export class Scenario {
         else sumTvlToken0 = -sumTvlToken0;
 
         return {
-            // expectedTicks: tvlRangeExpectedToNearest,
-            // fullRange: tvlRangeFullSpacing,
             data: {
                 tick: slot0.tick,
                 price: Scenario.TickToPrice(slot0.tick).toString(),
@@ -705,8 +917,8 @@ export class Scenario {
             liquidityActive: BigNumber.from(poolResult.pool.liquidity),
             tickIdx: activeTickIdx,
             liquidityNet: BigNumber.from(0),
-            price0: tickToPrice(token0, token1, activeTickIdx).toFixed(PRICE_FIXED_DIGITS),
-            price1: tickToPrice(token1, token0, activeTickIdx).toFixed(PRICE_FIXED_DIGITS),
+            price0: tickToPrice(token0, token1, activeTickIdx).toFixed(FIXED_DIGITS),
+            price1: tickToPrice(token1, token0, activeTickIdx).toFixed(FIXED_DIGITS),
             liquidityGross: BigNumber.from(0),
         }
 
@@ -859,7 +1071,9 @@ export class Scenario {
 
         return {
             amount0: positionAmounts.amount0.toString(),
-            amount1: positionAmounts.amount1.toString()
+            amount1: positionAmounts.amount1.toString(),
+            tokensOwed0: positionAmounts._tokensOwed0.toString(),
+            tokensOwed1: positionAmounts._tokensOwed1.toString(),
         }
     }
 
@@ -903,76 +1117,99 @@ export class Scenario {
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
         const wethToken = new ethers.Contract(getContract('WETH')!, ERC20TokenABI, defaultProvider);
         const daiToken = new ethers.Contract(getContract('DAI')!, ERC20TokenABI, defaultProvider);
-        const alphaVaultToken0 = new ethers.Contract(getContract('alphaVaultAddress0'), ERC20TokenABI, defaultProvider);
-        const alphaVaultToken1 = new ethers.Contract(getContract('alphaVaultAddress1'), ERC20TokenABI, defaultProvider);
+
 
         const resultWETH = await wethToken.connect(keyA).balanceOf(keyA.address);
         const resultDAI = await daiToken.connect(keyA).balanceOf(keyA.address);
-        const resultAlphaWETH = await wethToken.connect(keyA).balanceOf(getContract('alphaVaultAddress0'));
         const resultPoolWETH = await wethToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
-
-        const resultAlphaDAI = await daiToken.connect(keyA).balanceOf(getContract('alphaVaultAddress0'));
         const resultPoolDAI = await daiToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
 
-        const resultAlphaHighWETH = await wethToken.connect(keyA).balanceOf(getContract('alphaVaultAddress1'));
-        const resultAlphaHighDAI = await daiToken.connect(keyA).balanceOf(getContract('alphaVaultAddress1'));
-
-        const sharesAlpha0 = await alphaVaultToken0.connect(keyA).balanceOf(keyA.address);
-        const sharesAlpha1 = await alphaVaultToken1.connect(keyA).balanceOf(keyA.address);
 
         return {
-            token0Balance: (resultWETH.div(defaultDecDivider)).toString(),
-            token1Balanace: (resultDAI.div(defaultDecDivider)).toString(),
-            token0BalanceAlpha0: (resultAlphaWETH.div(defaultDecDivider)).toString(),
-            token1BalanceAlpha0: (resultAlphaDAI.div(defaultDecDivider)).toString(),
-            token0BalanceAlpha1: (resultAlphaHighWETH.div(defaultDecDivider)).toString(),
-            token1BalanceAlpha1: (resultAlphaHighDAI.div(defaultDecDivider)).toString(),
-            token0BalancePool: (resultPoolWETH.div(defaultDecDivider)).toString(),
-            token1BalancePool: (resultPoolDAI.div(defaultDecDivider)).toString(),
-            tokenAV0: (sharesAlpha0.div(defaultDecDivider)).toString(),
-            tokenAV1: (sharesAlpha1.div(defaultDecDivider)).toString(),
+            token0Balance: ToDecimal(resultWETH),
+            token1Balanace: ToDecimal(resultDAI),
+            token0BalancePool: ToDecimal(resultPoolWETH),
+            token1BalancePool: ToDecimal(resultPoolDAI),
             _token0Balance: (resultWETH).toString(),
             _token1Balanace: (resultDAI).toString(),
-            _token0BalanceAlpha0: (resultAlphaWETH).toString(),
-            _token1BalanceAlpha0: (resultAlphaDAI).toString(),
-            _token0BalanceAlpha1: (resultAlphaHighWETH).toString(),
-            _token1BalanceAlpha1: (resultAlphaHighDAI).toString(),
             _token0BalancePool: (resultPoolWETH).toString(),
             _token1BalancePool: (resultPoolDAI).toString(),
-            _tokenAV0: (sharesAlpha0).toString(),
-            _tokenAV1: (sharesAlpha1).toString(),
         };
     }
 
-    static async GetAlphaVaultData(vault: number) {
-        const vaultAddress = `alphaVaultAddress${vault}`;
+    /** Returns AlphaVaults data */
+    static async GetAlphaVaultData() {
         const [keyA] = await ethers.getSigners();
-        const defaultProvider = ethers.getDefaultProvider();
-        const alphaVault = new ethers.Contract(getContract(vaultAddress), alphaVaultABI, defaultProvider);
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
 
-        const baseLower = await alphaVault.connect(keyA).baseLower();
-        const baseUpper = await alphaVault.connect(keyA).baseUpper();
-        const limitLower = await alphaVault.connect(keyA).limitLower();
-        const limitUpper = await alphaVault.connect(keyA).limitUpper();
-        const accruedProtocolFees0 = await alphaVault.connect(keyA).accruedProtocolFees0();
-        const accruedProtocolFees1 = await alphaVault.connect(keyA).accruedProtocolFees1();
+        const wethToken = new ethers.Contract(getContract('WETH')!, ERC20TokenABI, defaultProvider);
+        const daiToken = new ethers.Contract(getContract('DAI')!, ERC20TokenABI, defaultProvider);
 
-        return {
-            baseUpper: baseUpper,
-            baseLower: baseLower,
-            limitUpper: limitUpper,
-            limitLower: limitLower,
-            accruedProtocolFees0: accruedProtocolFees0.toString(),
-            accruedProtocolFees1: accruedProtocolFees1.toString()
+        let vaultTvl: any[] = []
+        const contracts = getContracts()
+        let i = 0;
+
+        while (!(contracts['alphaVaultAddress' + i] == null
+            && contracts['alphaVaultPassiveStrategyAddress' + i] == null)) {
+
+            const contractAddress = contracts['alphaVaultAddress' + i].address
+            const alphaVault = new ethers.Contract(contractAddress, alphaVaultABI, defaultProvider);
+
+            const resultAlphaWETH = await wethToken.connect(keyA).balanceOf(contractAddress);
+            const resultAlphaDAI = await daiToken.connect(keyA).balanceOf(contractAddress);
+            const totalAmounts0 = await Scenario.GetTotalAmounts(i)
+
+            const baseLower = await alphaVault.connect(keyA).baseLower();
+            const baseUpper = await alphaVault.connect(keyA).baseUpper();
+            const limitLower = await alphaVault.connect(keyA).limitLower();
+            const limitUpper = await alphaVault.connect(keyA).limitUpper();
+            const accruedProtocolFees0 = await alphaVault.connect(keyA).accruedProtocolFees0();
+            const accruedProtocolFees1 = await alphaVault.connect(keyA).accruedProtocolFees1();
+            const sharesAlphaVault = await alphaVault.connect(keyA).balanceOf(keyA.address);
+
+            const resultPoke0 = await alphaVault.connect(keyA)._poke(baseLower, baseUpper);
+            await defaultProvider.waitForTransaction(resultPoke0.hash);
+
+            const resultPoke1 = await alphaVault.connect(keyA)._poke(limitLower, limitUpper);
+            await defaultProvider.waitForTransaction(resultPoke1.hash);
+
+            const positionAmounts0 = await alphaVault.connect(keyA).getPositionAmounts(baseLower, baseUpper)
+            const positionAmounts1 = await alphaVault.connect(keyA).getPositionAmounts(limitLower, limitUpper)
+
+            const tokensOwed0 = (BigNumber.from(positionAmounts0._tokensOwed0).add(BigNumber.from(positionAmounts1._tokensOwed0))).toString();
+            const tokensOwed1 = (BigNumber.from(positionAmounts0._tokensOwed1).add(BigNumber.from(positionAmounts1._tokensOwed1))).toString();
+
+            //alphaVault.connect(keyA).callStatic.collect()
+
+            vaultTvl.push({
+                vaultID: i++,
+                total0: ToDecimal(totalAmounts0.total0),
+                total1: ToDecimal(totalAmounts0.total1),
+                outOfPool0: ToDecimal(resultAlphaWETH),
+                outOfPool1: ToDecimal(resultAlphaDAI),
+                baseLower: baseLower,
+                baseUpper: baseUpper,
+                limitLower: limitLower,
+                limitUpper: limitUpper,
+                accruedProtocolFees0: accruedProtocolFees0.toString(),
+                accruedProtocolFees1: accruedProtocolFees1.toString(),
+                shares: ToDecimal(sharesAlphaVault),
+                tokensOwed0: ToDecimal(tokensOwed0),
+                tokensOwed1: ToDecimal(tokensOwed1)
+            })
         }
+
+        return vaultTvl
     }
 
+    // Converts tick to price
     static TickToPrice(tick: number) {
         const tokenDecimals = token0Decimals - token1Decimals;
 
         return 1 / ((1 / (1.0001 ** tick)) * (10 ** tokenDecimals));
     }
 
+    // Converts given price to closest tick
     static async PriceToClosestTick(price: number) {
         const poolResult = await Scenario.getPoolResult()
         const token0 = new Token(1, poolResult.pool.token0.id, parseInt(poolResult.pool.token0.decimals))
@@ -1030,6 +1267,7 @@ export class Scenario {
     }
 }
 
+/** Formats processed ticks */
 async function formatData(poolTickData: PoolTickData, token0: Token, token1: Token) {
     const newData = await Promise.all(
         poolTickData.ticksProcessed.map(async (t: TickProcessed, i) => {
@@ -1085,7 +1323,8 @@ async function formatData(poolTickData: PoolTickData, token0: Token, token1: Tok
     return newData as TickEntry[];
 }
 
-const computeSurroundingTicks = (
+/** Computes surrounding ticks that are used in TVL calculation */
+function computeSurroundingTicks(
     activeTickProcessed: TickProcessed,
     tickSpacing: number,
     numSurroundingTicks: number,
@@ -1093,7 +1332,7 @@ const computeSurroundingTicks = (
     token0: Token,
     token1: Token,
     tickIdxToInitializedTick: Dictionary<Tick>
-) => {
+) {
     let previousTickProcessed: TickProcessed = {
         ...activeTickProcessed,
     }
@@ -1113,8 +1352,8 @@ const computeSurroundingTicks = (
             liquidityActive: previousTickProcessed.liquidityActive,
             tickIdx: currentTickIdx,
             liquidityNet: BigNumber.from(0),
-            price0: tickToPrice(token0, token1, currentTickIdx).toFixed(PRICE_FIXED_DIGITS),
-            price1: tickToPrice(token1, token0, currentTickIdx).toFixed(PRICE_FIXED_DIGITS),
+            price0: tickToPrice(token0, token1, currentTickIdx).toFixed(FIXED_DIGITS),
+            price1: tickToPrice(token1, token0, currentTickIdx).toFixed(FIXED_DIGITS),
             liquidityGross: BigNumber.from(0),
         }
 
@@ -1147,3 +1386,10 @@ const computeSurroundingTicks = (
     return processedTicks
 }
 
+/** Converts BigNumberish to decimal format using FIXED_DIGITS decimals */
+export function ToDecimal(number: BigNumberish, decimals: number = FIXED_DIGITS) {
+    return CurrencyAmount.fromRawAmount(
+        baseToken,
+        number.toString()
+    ).toFixed(decimals)
+}

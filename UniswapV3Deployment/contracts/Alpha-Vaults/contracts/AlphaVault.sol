@@ -487,11 +487,11 @@ contract AlphaVault is
         override
         returns (uint256 total0, uint256 total1)
     {
-        (uint256 baseAmount0, uint256 baseAmount1) = getPositionAmounts(
+        (uint256 baseAmount0, uint256 baseAmount1, , ) = getPositionAmounts(
             baseLower,
             baseUpper
         );
-        (uint256 limitAmount0, uint256 limitAmount1) = getPositionAmounts(
+        (uint256 limitAmount0, uint256 limitAmount1, , ) = getPositionAmounts(
             limitLower,
             limitUpper
         );
@@ -507,7 +507,12 @@ contract AlphaVault is
     function getPositionAmounts(int24 tickLower, int24 tickUpper)
         public
         view
-        returns (uint256 amount0, uint256 amount1)
+        returns (
+            uint256 amount0,
+            uint256 amount1,
+            uint128 _tokensOwed0,
+            uint128 _tokensOwed1
+        )
     {
         (
             uint128 liquidity,
@@ -521,6 +526,9 @@ contract AlphaVault is
             tickUpper,
             liquidity
         );
+
+        _tokensOwed0 = tokensOwed0;
+        _tokensOwed1 = tokensOwed1;
 
         // Subtract protocol fees
         uint256 oneMinusFee = uint256(1e6).sub(protocolFee);
