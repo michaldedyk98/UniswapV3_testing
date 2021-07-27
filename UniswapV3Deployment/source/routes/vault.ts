@@ -4,6 +4,7 @@ const router = express.Router();
 
 router.post('/boosterDepositNFT', controller.boosterDepositNFT);
 router.post('/boosterDeposit', controller.boosterDeposit);
+router.post('/boosterWithdraw', controller.boosterWithdraw);
 router.post('/deposit', controller.deposit);
 router.post('/withdraw', controller.withdraw);
 router.post('/rebalance', controller.rebalance);

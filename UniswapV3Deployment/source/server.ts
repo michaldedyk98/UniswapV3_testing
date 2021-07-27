@@ -3,10 +3,8 @@ import express, { Express, request } from 'express';
 import morgan from 'morgan';
 import routes from './routes/vault';
 import { client } from '../scripts/config/db';
-import { delay } from '../scripts/config/config';
 import { keyBy } from 'lodash';
 import { setContracts } from "../scripts/config/contracts";
-import internal from './controllers/internal';
 
 /** Express API router */
 const router: Express = express()

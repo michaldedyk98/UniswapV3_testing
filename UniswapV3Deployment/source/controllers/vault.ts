@@ -174,6 +174,34 @@ const boosterDepositNFT = async (req: Request, res: Response, next: NextFunction
     }
 };
 
+// Withdraws all tokens from UniswapBooster
+const boosterWithdraw = async (req: Request, res: Response, next: NextFunction) => {
+    let tokenId: string = req.body.tokenId;
+
+    if (!(tokenId != null)) {
+        log('boosterWithdraw', 'Parameter tokenId is required', req.body, {})
+
+        return res.status(400).json({ message: 'Parameter tokenId is required' });
+    }
+
+    try {
+        const depositResult = await Scenario.BoosterWithdraw(
+            BigNumber.from(tokenId),
+        );
+
+        log('boosterWithdraw', 'Success', req.body, depositResult)
+
+        return res.status(200).json(depositResult);
+    } catch (err) {
+        log('boosterWithdraw', 'Failed to withdraw', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to withdraw',
+            error: err
+        });
+    }
+};
+
 // Withdraws tokens from AlphaVault (and uniswap v3 pool)
 const withdraw = async (req: Request, res: Response, next: NextFunction) => {
     let shares: string = req.body.shares;
@@ -854,6 +882,7 @@ export default {
     getBoosterPosition,
     boosterDepositNFT,
     boosterDeposit,
+    boosterWithdraw,
     deposit,
     withdraw,
     rebalance,

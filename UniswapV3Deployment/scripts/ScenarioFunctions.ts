@@ -43,7 +43,6 @@ import { CurrencyAmount, Token, Price, Currency } from '@uniswap/sdk-core'
 import { TickMath, tickToPrice, priceToClosestTick, Pool, FullMath } from '@uniswap/v3-sdk'
 import { Decimal } from 'decimal.js';
 import { addContract, getContract, getContracts } from "./config/contracts";
-import JSBI from "jsbi";
 
 var Fraction = require('fractional').Fraction
 
@@ -228,7 +227,7 @@ export class Scenario {
             const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
 
             const snapshotPromise = new Promise((resolve, reject) => {
-                npm.on("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
+                npm.once("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
                     if (event.transactionHash == result?.hash) {
                         event.removeListener();
 
@@ -315,8 +314,10 @@ export class Scenario {
             return {
                 operator: result.operator.toString(),
                 shares: result.uniswapShares,
-                amount0: result.amount0.toString(),
-                amount1: result.amount1.toString(),
+                amount0: ToDecimal(result.amount0),
+                amount1: ToDecimal(result.amount1),
+                _amount0: result.amount0.toString(),
+                _amount1: result.amount1.toString(),
                 tickLower: result.tickLower,
                 tickUpper: result.tickUpper,
                 liquidity: result.liquidity.toString(),
@@ -615,7 +616,70 @@ export class Scenario {
                 { gasLimit: maxGasLimit }
             );
 
-            await defaultProvider.waitForTransaction(result.hash);
+            const proof = await defaultProvider.waitForTransaction(result.hash);
+            const eventResult = await depositPromise;
+            return {
+                eventResult,
+                gasUsed: proof.gasUsed.toString(),
+            }
+        } catch (err) {
+            console.log(err);
+
+            if (timeoutHandle!)
+                clearInterval(timeoutHandle!)
+
+            throw err;
+        }
+    }
+
+    static async BoosterWithdraw(
+        tokenId: BigNumberish,
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        defaultProvider.pollingInterval = 1;
+        let timeoutHandle: NodeJS.Timeout;
+
+        try {
+            const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
+            const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
+
+            const depositPromise = new Promise((resolve, reject) => {
+                uniswapBooster.on("Withdraw", (sender, to, tokenId0, tokenId1, amount0, amount1, feeAmount0, feeAmount1, event) => {
+
+                    if (event.transactionHash == result?.hash) {
+                        event.removeListener();
+
+                        resolve({
+                            sender: sender.toString(),
+                            to: to.toString(),
+                            boosterTokenId: tokenId1.toString(),
+                            uniswapTokenId: tokenId0.toString(),
+                            amount0: ToDecimal(amount0),
+                            amount1: ToDecimal(amount1),
+                            feeAmount0: ToDecimal(feeAmount0),
+                            feeAmount1: ToDecimal(feeAmount1),
+                            _amount0: amount0.toString(),
+                            _amount1: amount1.toString(),
+                            _feeAmount0: feeAmount0.toString(),
+                            _feeAmount1: feeAmount1.toString(),
+                            gasUsed: proof.gasUsed
+                        });
+                    }
+                });
+
+                timeoutHandle = setTimeout(() => {
+                    reject(new Error('Timeout while waiting for event'));
+                }, 5000);
+            });
+
+            const result = await uniswapBooster.connect(keyA).withdraw(
+                tokenId,
+                keyA.address,
+                { gasLimit: maxGasLimit }
+            );
+
+            const proof = await defaultProvider.waitForTransaction(result.hash);
             return (await depositPromise);
         } catch (err) {
             console.log(err);
@@ -694,7 +758,7 @@ export class Scenario {
         const tvlRangeExpectedToNearest = tvlRange.slice(1, sliceRange ? tvlRange.length - 2 : tvlRange.length - 1)
         const tvlRangeFullSpacing = tvlRange.slice(2, sliceRange ? tvlRange.length - 3 : tvlRange.length - 2)
 
-        let oneTick: boolean = Math.abs(expectedTick - currentTick) < 60 && isBetween(Math.floor(currentTick / tickSpacing) * tickSpacing, Math.ceil(currentTick / tickSpacing) * tickSpacing, expectedTick)
+        let oneTick: boolean = Math.abs(expectedTick - currentTick) < 60 && isBetween(Math.floor(currentTick / tickSpacing) * tickSpacing, Math.ceil(expectedTick / tickSpacing) * tickSpacing, expectedTick)
         let lowerTVL: number = 0
         let upperTVL: number = 0
 
@@ -719,7 +783,7 @@ export class Scenario {
         let sumTvlToken0: number = 0
         let sumTvlToken1: number = 0
 
-        if (lowerTVL != 0) {
+        if (lowerTVL != 0 && lowerTVL != 1) {
             sumTvlToken0 += lowerTVL * tvlRangeExpectedToNearest[0].tvlToken0
             sumTvlToken1 += lowerTVL * tvlRangeExpectedToNearest[0].tvlToken1
         } else if (!oneTick) {
@@ -729,7 +793,7 @@ export class Scenario {
 
         const lastRangeIndex: number = tvlRangeExpectedToNearest.length - 1
 
-        if (upperTVL != 0) {
+        if (upperTVL != 0 && upperTVL != 1) {
             sumTvlToken0 += upperTVL * tvlRangeExpectedToNearest[lastRangeIndex].tvlToken0
             sumTvlToken1 += upperTVL * tvlRangeExpectedToNearest[lastRangeIndex].tvlToken1
         } else if (Math.abs(nearestTick - nearestExpectedTick) != 60 && !oneTick) {
@@ -794,6 +858,7 @@ export class Scenario {
         else sumTvlToken0 = -sumTvlToken0;
 
         return {
+            fullRange: tvlRangeExpectedToNearest,
             data: {
                 tick: slot0.tick,
                 price: Scenario.TickToPrice(slot0.tick).toString(),
@@ -807,6 +872,7 @@ export class Scenario {
                 comment: `You have to buy ${amountToBuy} ${tokenToBuy}`
             },
             tvl: {
+                oneTick: oneTick,
                 lowerTVL: lowerTVL,
                 upperTVL: upperTVL,
                 tvlToken0: sumTvlToken0,
@@ -1118,22 +1184,26 @@ export class Scenario {
         const wethToken = new ethers.Contract(getContract('WETH')!, ERC20TokenABI, defaultProvider);
         const daiToken = new ethers.Contract(getContract('DAI')!, ERC20TokenABI, defaultProvider);
 
-
         const resultWETH = await wethToken.connect(keyA).balanceOf(keyA.address);
         const resultDAI = await daiToken.connect(keyA).balanceOf(keyA.address);
         const resultPoolWETH = await wethToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
         const resultPoolDAI = await daiToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
-
+        const resultBoosterWETH = await wethToken.connect(keyA).balanceOf(getContract('uniswapBooster'));
+        const resultBoosterDAI = await daiToken.connect(keyA).balanceOf(getContract('uniswapBooster'));
 
         return {
             token0Balance: ToDecimal(resultWETH),
             token1Balanace: ToDecimal(resultDAI),
             token0BalancePool: ToDecimal(resultPoolWETH),
             token1BalancePool: ToDecimal(resultPoolDAI),
+            token0Booster: ToDecimal(resultBoosterWETH),
+            token1Booster: ToDecimal(resultBoosterDAI),
             _token0Balance: (resultWETH).toString(),
             _token1Balanace: (resultDAI).toString(),
             _token0BalancePool: (resultPoolWETH).toString(),
             _token1BalancePool: (resultPoolDAI).toString(),
+            _token0Booster: (resultBoosterWETH).toString(),
+            _token1Booster: (resultBoosterDAI).toString(),
         };
     }
 

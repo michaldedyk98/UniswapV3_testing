@@ -76,7 +76,7 @@ export const FEE_TIER_TO_FEE_AMOUNT = (feeTier: string): FeeAmount => {
     }
 }
 
-export const isBetween = (num1: number, num2: number, value: number) => value > num1 && value < num2
+export const isBetween = (num1: number, num2: number, value: number) => value >= num1 && value <= num2
 
 export function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -84,6 +84,7 @@ export function delay(ms: number) {
 
 /** NonfungiblePositionManager ABI */
 export const nonfungiblePositionManagerABI = [
+    "function collect(tuple(uint256 tokenId, address recipient, uint128 amount0Max, uint128 amount1Max)) external payable returns (uint256 amount0, uint256 amount1)",
     "function approve(address spender, uint256 tokenId) external",
     "function mint(tuple(address token0, address token1, uint24 fee, int24 tickLower, int24 tickUpper, uint256 amount0Desired, uint256 amount1Desired, uint256 amount0Min, uint256 amount1Min, address recipient, uint256 deadline)) external returns(uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)",
     "function decreaseLiquidity(tuple(uint256 tokenId, uint128 liquidity, uint256 amount0Min, uint256 amount1Min, uint256 deadline)) external payable returns (uint256 amount0, uint256 amount1)",
@@ -131,11 +132,13 @@ export const ERC20TokenABI = [
 
 /** UniswapBooster ABI */
 export const uniswapBoosterABI = [
-    "function positions(uint256 tokenId) external view returns(address operator, uint8 uniswapShares, uint256 amount0, uint256 amount1, int24 tickLower, int24 tickUpper, uint128 liquidity, uint128 tokensOwed0, uint128 tokensOwed1)",
+    "function positions(uint256 tokenId) public view returns(address operator, uint8 uniswapShares, uint256 amount0, uint256 amount1, int24 tickLower, int24 tickUpper, uint128 liquidity, uint128 tokensOwed0, uint128 tokensOwed1)",
     "function deposit(int24 baseLower, int24 baseUpper, uint256 amount0Desired, uint256 amount1Desired) external returns(uint256 boosterTokenId, uint256 tokenId, uint256 amount0, uint256 amount1)",
     "function depositNFT(uint256 tokenId) external returns(uint256 boosterTokenId, uint256 poolTokenId, uint256 amount0, uint256 amount1)",
+    "function withdraw(uint256 tokenId, address to) external returns(uint256 feeAmount0, uint256 feeAmount1, uint256 total0, uint256 total1)",
     "event Deposit(address indexed sender, uint256 tokenId0, uint256 tokenId1, uint256 amount0, uint256 amount1)",
-    "event DepositNFT(address indexed sender, uint256 tokenId0, uint256 tokenId1)"
+    "event DepositNFT(address indexed sender, uint256 tokenId0, uint256 tokenId1)",
+    "event Withdraw(address indexed sender, address indexed to, uint256 tokenId0, uint256 tokenId1, uint256 amount0, uint256 amount1, uint256 feeAmount0, uint256 feeAmount1)"
 ]
 
 
