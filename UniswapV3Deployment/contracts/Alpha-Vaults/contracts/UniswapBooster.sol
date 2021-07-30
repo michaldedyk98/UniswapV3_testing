@@ -5,6 +5,7 @@ pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -16,6 +17,8 @@ import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.so
 import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
+import "hardhat/console.sol";
 
 import "../interfaces/IUniswapBooster.sol";
 
@@ -53,6 +56,9 @@ contract UniswapBooster is
 
     /// @dev Min shares value
     uint8 public constant MIN_SHARES = 5;
+
+    /// @dev Bonus base
+    uint8 public constant BONUS_BASE = 100;
 
     /**
      * @param _nonfungiblePositionManager NonfungiblePositionManager of uniswap
@@ -148,8 +154,16 @@ contract UniswapBooster is
         if (amount1Desired > 0)
             token1.safeTransferFrom(msg.sender, address(this), amount1Desired);
 
-        uint256 scaledAmount0 = _scale(amount0Desired, shares, _scaleTo);
-        uint256 scaledAmount1 = _scale(amount1Desired, shares, _scaleTo);
+        uint256 scaledAmount0 = FullMath.mulDiv(
+            amount0Desired,
+            shares,
+            _scaleTo
+        );
+        uint256 scaledAmount1 = FullMath.mulDiv(
+            amount1Desired,
+            shares,
+            _scaleTo
+        );
 
         token0.approve(address(nonfungiblePositionManager), amount0Desired);
         token1.approve(address(nonfungiblePositionManager), amount1Desired);
@@ -265,47 +279,40 @@ contract UniswapBooster is
         // Burn booster token
         _burn(tokenId);
 
-        // Id of LP token in uniswap pool
-        uint256 poolTokenId;
-
         // Calculates token0 and token1 fees and total return value of token0 and token1
         // Prevents stack too deep error caused by too many local variables in current scope
-        (
-            poolTokenId,
-            feeAmount0,
-            feeAmount1,
-            total0,
-            total1
-        ) = _burnAndCalculateReturn(tokenId);
+        BurnAndCalculateResult memory result = _burnAndCalculateReturn(tokenId);
 
         // Transfer tokens to recipient
-        if (total0 > 0) token0.safeTransfer(to, total0);
-        if (total1 > 0) token1.safeTransfer(to, total1);
+        if (result.total0 > 0) token0.safeTransfer(to, result.total0);
+        if (result.total1 > 0) token1.safeTransfer(to, result.total1);
 
         // Free storage space
         delete _positions[tokenId];
 
+        // Emit withdraw event
         emit Withdraw(
             msg.sender,
             to,
             tokenId,
-            poolTokenId,
-            total0,
-            total1,
-            feeAmount0,
-            feeAmount1
+            result.poolTokenId,
+            result.total0,
+            result.total1,
+            result.feeAmount0,
+            result.feeAmount1
+        );
+
+        return (
+            result.feeAmount0,
+            result.feeAmount1,
+            result.total0,
+            result.total1
         );
     }
 
     function _burnAndCalculateReturn(uint256 tokenId)
         internal
-        returns (
-            uint256 poolTokenId,
-            uint256 feeAmount0,
-            uint256 feeAmount1,
-            uint256 total0,
-            uint256 total1
-        )
+        returns (BurnAndCalculateResult memory result)
     {
         BoosterPosition memory position = _positions[tokenId];
         (int24 tickLower, int24 tickUpper, uint128 liquidity) = _nftPosition(
@@ -319,23 +326,35 @@ contract UniswapBooster is
             uint256 amount0,
             uint256 amount1
         ) = _burnAndCollectTokens(
-            BurnAndCollectParams({
-                boosterTokenId: tokenId,
-                tickLower: tickLower,
-                tickUpper: tickUpper,
-                liquidity: liquidity
-            })
-        );
+                BurnAndCollectParams({
+                    boosterTokenId: tokenId,
+                    tickLower: tickLower,
+                    tickUpper: tickUpper,
+                    liquidity: liquidity
+                })
+            );
 
-        // scale fees by 110% (MAX_SHARES + position shares)
-        feeAmount0 = _scale(fees0, MAX_SHARES + position.shares, _scaleTo);
-        feeAmount1 = _scale(fees1, MAX_SHARES + position.shares, _scaleTo);
+        // // scale fees by 110% (MAX_SHARES + position shares)
+        // result.feeAmount0 = FullMath.mulDiv(
+        //     fees0,
+        //     BONUS_BASE + position.shares,
+        //     _scaleTo
+        // );
+        // result.feeAmount1 = FullMath.mulDiv(
+        //     fees1,
+        //     BONUS_BASE + position.shares,
+        //     _scaleTo
+        // );
 
         // 110% * fees collected + 100% position liquidity + amount taken on deposit (including fees)
-        total0 = (feeAmount0 + amount0) + position.token0;
-        total1 = (feeAmount1 + amount1) + position.token1;
+        // result.total0 = (fees0 + amount0) + position.token0;
+        // result.total1 = (fees1 + amount1) + position.token1;
 
-        poolTokenId = position.tokenId;
+        result.total0 = (fees0 + amount0);
+        result.total1 = (fees1 + amount1);
+        result.feeAmount0 = fees0;
+        result.feeAmount1 = fees1;
+        result.poolTokenId = position.tokenId;
     }
 
     /**
@@ -428,17 +447,17 @@ contract UniswapBooster is
         returns (uint256 amount0, uint256 amount1)
     {
         // Amount of liquidity decreased from UniswapV3 position
-        uint128 scaledLiquidity = uint128(
-            _scale(liquidity, MAX_SHARES - shares, _scaleTo)
+        uint128 scaledLiquidity = SafeCast.toUint128(
+            FullMath.mulDiv(liquidity, BONUS_BASE - shares, _scaleTo)
         );
 
-        // Decrease liquidity from position (MAX_SHARES - shares, i.e. 100% - 10% = 90%)
+        // Decrease liquidity from position (BONUS_BASE - shares, i.e. 100% - 10% = 90%)
         nonfungiblePositionManager.decreaseLiquidity(
             INonfungiblePositionManager.DecreaseLiquidityParams({
                 tokenId: tokenId,
                 liquidity: scaledLiquidity,
-                amount0Min: 1,
-                amount1Min: 1,
+                amount0Min: 0,
+                amount1Min: 0,
                 deadline: block.timestamp + 30 minutes
             })
         );
@@ -511,29 +530,156 @@ contract UniswapBooster is
             })
         );
 
-        // uint256 scaledAmount0 = amount0 * 10;
-        // uint256 scaledAmount1 = amount1 * 10;
+        uint256 scaleBase = SafeCast.toUint256(position.shares);
 
-        // uint256 scaledFees0 = fees0 * 10;
-        // uint256 scaledFees = fees1 * 10;
+        // Calculates scaled fees of 100% original pool value * (BONUS_BASE + SHARES) - e.g. 110% bonus
+        uint256 scaledFees0 = FullMath.mulDiv(
+            fees0 * scaleBase,
+            BONUS_BASE + position.shares,
+            _scaleTo
+        );
+        uint256 scaledFees1 = FullMath.mulDiv(
+            fees1 * scaleBase,
+            BONUS_BASE + position.shares,
+            _scaleTo
+        );
 
-        ISwapRouter.ExactOutputSingleParams memory swapParams = ISwapRouter
-        .ExactOutputSingleParams({
-            tokenIn: address(token0),
-            tokenOut: address(token1),
-            fee: feeAmount,
-            recipient: address(this),
-            deadline: block.timestamp + 15 minutes,
-            amountOut: 100,
-            amountInMaximum: type(uint128).max,
-            sqrtPriceLimitX96: 0
+        uint256 required0 = amount0 + fees0 + position.token0;
+        uint256 required1 = amount1 + fees1 + position.token1;
+
+        // Amount of fees with bonus to transfer to LP
+        fees0 = scaledFees0;
+        fees1 = scaledFees1;
+
+        // If required swap tokenIn to get remaining tokens of tokenOut
+        SwapParams memory swapParams = SwapParams({
+            required0: required0,
+            required1: required1,
+            amount0: amount0,
+            amount1: amount1,
+            fees0: scaledFees0,
+            fees1: scaledFees1,
+            scaleBase: scaleBase
         });
 
-        // If required swap tokens to get remaining balance
+        // Swap if needed to get back all LP tokens
+        bool swapTokens = _swapMissingTokens(swapParams);
+
+        if (swapTokens) {
+            amount0 *= scaleBase;
+            amount1 *= scaleBase;
+
+            console.log("SWAP");
+        } else {
+            amount0 += position.token0;
+            amount1 += position.token1;
+
+            console.log("NO SWAP");
+        }
+
+        {
+            console.log("fess0 %s", fees0);
+            console.log("fees1 %s", fees1);
+            console.log("transferTo token0 %s", amount0 + fees0);
+            console.log("transferTo token1 %s", amount1 + fees1);
+        }
+
+        // Burns NFT token, applicable only if liquidity, tokensOwed0 and tokensOwed1 are zero
+        nonfungiblePositionManager.burn(position.tokenId);
+    }
+
+    function _swapMissingTokens(SwapParams memory params)
+        internal
+        returns (bool swap)
+    {
+        uint256 swapAmount = 0;
+        IERC20 tokenIn;
+        IERC20 tokenOut;
+
+        // Amount of tokens to return back to LP
+        params.amount0 *= params.scaleBase;
+        params.amount1 *= params.scaleBase;
+
+        bool swapForToken0 = int256(
+            (params.amount0 + params.fees0) - params.required0
+        ) > 0;
+        bool swapForToken1 = int256(
+            (params.amount1 + params.fees1) - params.required1
+        ) > 0;
+
+        console.log("swapForToken0: %s", swapForToken0);
+        console.log("swapForToken1: %s", swapForToken1);
+
+        // No need to swap if both tokens are above 0 or below zero
+        bool swapTokens = swapForToken0 != swapForToken1;
+
+        if (swapForToken0) {
+            // Swapping token1 for token0
+            swapAmount = (params.amount0 + params.fees0) - params.required0;
+
+            tokenIn = token1;
+            tokenOut = token0;
+        } else if (swapForToken1) {
+            // Swapping token0 for token1
+            swapAmount = (params.amount1 + params.fees1) - params.required1;
+
+            tokenIn = token0;
+            tokenOut = token1;
+        }
+        console.log(
+            "To return %s token0, %s token1",
+            params.required0,
+            params.required1
+        );
+
+        console.log("Swap amount %s tokens", swapAmount);
+        console.log("Amount0 %s", params.amount0);
+        console.log("Amount1 %s", params.amount1);
+
+        console.log(
+            "balanceOf token0 %s before swap",
+            token0.balanceOf(address(this))
+        );
+        console.log(
+            "balanceOf token1 %s before swap",
+            token1.balanceOf(address(this))
+        );
+
+        if (!(swapAmount > 0 && swapTokens)) return false;
+
+        tokenIn.safeApprove(address(swapRouter), type(uint128).max);
+
+        ISwapRouter.ExactOutputSingleParams memory swapParams = ISwapRouter
+            .ExactOutputSingleParams({
+                tokenIn: address(tokenIn),
+                tokenOut: address(tokenOut),
+                fee: feeAmount,
+                recipient: address(this),
+                deadline: block.timestamp + 15 minutes,
+                amountOut: swapAmount,
+                amountInMaximum: type(uint128).max,
+                sqrtPriceLimitX96: 0
+            });
+
         uint256 amountIn = swapRouter.exactOutputSingle(swapParams);
 
-        // Burns NFT token, applicable only if liquidity tokensOwed0 and tokensOwed1 are zero
-        nonfungiblePositionManager.burn(position.tokenId);
+        (, int24 tick, , , , , ) = pool.slot0();
+        console.log("swap amountIn %s ", amountIn);
+        console.log("tick after swap %s ", uint128(tick));
+
+        // Remove approval for using booster tokens
+        tokenIn.safeApprove(address(swapRouter), 0);
+
+        console.log(
+            "balanceOf token0 %s after swap",
+            token0.balanceOf(address(this))
+        );
+        console.log(
+            "balanceOf token1 %s after swap",
+            token1.balanceOf(address(this))
+        );
+
+        return true;
     }
 
     /// @dev Calculates amount of token0 and token1 for given liquidity and range from tickLower to tickUpper
@@ -551,19 +697,5 @@ contract UniswapBooster is
                 TickMath.getSqrtRatioAtTick(tickUpper),
                 liquidity
             );
-    }
-
-    /// @dev Calculates percentage, i.e. x * y / scale
-    function _scale(
-        uint256 x,
-        uint256 y,
-        uint128 scale
-    ) internal pure returns (uint256) {
-        uint256 a = x / scale;
-        uint256 b = x % scale;
-        uint256 c = y / scale;
-        uint256 d = y % scale;
-
-        return a * c * scale + a * d + b * c + (b * d) / scale;
     }
 }

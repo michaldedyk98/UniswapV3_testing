@@ -22,9 +22,9 @@ export const MIN_TICK = -887220
 export const MAX_TICK = -MIN_TICK
 
 /** Default balance of token0 and token1 */
-export const tokenDefaultBalance: BigNumber = BigNumber.from("10000000000000000000000000000")
+export const tokenDefaultBalance: BigNumber = BigNumber.from("1000000000000000000000000000000")
 /** Amount of deposit to AlphaVault1 */
-export const alphaVaultDeposit: BigNumber = BigNumber.from("10000000000000000000000000")
+export const alphaVaultDeposit: BigNumber = BigNumber.from("1000000000000000000000000000")
 /** AlphaVault1 rebalance swap value */
 export const alphaVaultRebalanceAmount: BigNumber = BigNumber.from("9000000000000000000000000")
 /** Swap router maximum token input */

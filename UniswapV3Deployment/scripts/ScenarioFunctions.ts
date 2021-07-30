@@ -227,7 +227,7 @@ export class Scenario {
             const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
 
             const snapshotPromise = new Promise((resolve, reject) => {
-                npm.once("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
+                npm.on("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
                     if (event.transactionHash == result?.hash) {
                         event.removeListener();
 
@@ -602,6 +602,7 @@ export class Scenario {
                             sender: sender.toString(),
                             boosterTokenId: tokenId1.toString(),
                             uniswapTokenId: tokenId0.toString(),
+                            gasUsed: defaultProvider.getTransactionReceipt(event.transactionHash) ?? '0',
                         });
                     }
                 });
@@ -617,11 +618,10 @@ export class Scenario {
             );
 
             const proof = await defaultProvider.waitForTransaction(result.hash);
-            const eventResult = await depositPromise;
-            return {
-                eventResult,
-                gasUsed: proof.gasUsed.toString(),
-            }
+            const eventResult: any = await depositPromise;
+            eventResult.gasUsed = proof.gasUsed.toString();
+
+            return eventResult;
         } catch (err) {
             console.log(err);
 
@@ -642,7 +642,6 @@ export class Scenario {
 
         try {
             const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
-            const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
 
             const depositPromise = new Promise((resolve, reject) => {
                 uniswapBooster.on("Withdraw", (sender, to, tokenId0, tokenId1, amount0, amount1, feeAmount0, feeAmount1, event) => {
@@ -663,7 +662,7 @@ export class Scenario {
                             _amount1: amount1.toString(),
                             _feeAmount0: feeAmount0.toString(),
                             _feeAmount1: feeAmount1.toString(),
-                            gasUsed: proof.gasUsed
+
                         });
                     }
                 });
@@ -680,7 +679,10 @@ export class Scenario {
             );
 
             const proof = await defaultProvider.waitForTransaction(result.hash);
-            return (await depositPromise);
+            const depositResult: any = await depositPromise;
+            depositResult.gasUsed = proof.gasUsed.toString()
+
+            return depositResult;
         } catch (err) {
             console.log(err);
 
@@ -758,7 +760,10 @@ export class Scenario {
         const tvlRangeExpectedToNearest = tvlRange.slice(1, sliceRange ? tvlRange.length - 2 : tvlRange.length - 1)
         const tvlRangeFullSpacing = tvlRange.slice(2, sliceRange ? tvlRange.length - 3 : tvlRange.length - 2)
 
-        let oneTick: boolean = Math.abs(expectedTick - currentTick) < 60 && isBetween(Math.floor(currentTick / tickSpacing) * tickSpacing, Math.ceil(expectedTick / tickSpacing) * tickSpacing, expectedTick)
+        let oneTick: boolean =
+            Math.abs(expectedTick - currentTick) < 60 &&
+            isBetween(Math.floor(currentTick / tickSpacing) * tickSpacing, Math.ceil(expectedTick / tickSpacing) * tickSpacing, expectedTick) &&
+            ((Math.floor(currentTick / tickSpacing) * tickSpacing) == (Math.floor(expectedTick / tickSpacing) * tickSpacing));
         let lowerTVL: number = 0
         let upperTVL: number = 0
 

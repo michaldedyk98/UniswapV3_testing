@@ -76,6 +76,24 @@ interface IUniswapBooster {
         uint128 liquidity;
     }
 
+    struct SwapParams {
+        uint256 required0;
+        uint256 required1;
+        uint256 amount0;
+        uint256 amount1;
+        uint256 fees0;
+        uint256 fees1;
+        uint256 scaleBase;
+    }
+
+    struct BurnAndCalculateResult {
+        uint256 poolTokenId;
+        uint256 feeAmount0;
+        uint256 feeAmount1;
+        uint256 total0;
+        uint256 total1;
+    }
+
     function depositNFT(uint256 tokenId)
         external
         returns (

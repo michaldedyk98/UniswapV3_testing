@@ -139,9 +139,9 @@ export class Deployer {
         const rebalanceResult = await AlphaVault1.rebalance(
             0,
             0,
-            MIN_TICK,
-            MAX_TICK,
-            MIN_TICK + 60,
+            -120,
+            120,
+            -180,
             -60,
             180,
             360,
