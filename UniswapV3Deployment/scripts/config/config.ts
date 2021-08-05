@@ -136,9 +136,13 @@ export const uniswapBoosterABI = [
     "function deposit(int24 baseLower, int24 baseUpper, uint256 amount0Desired, uint256 amount1Desired) external returns(uint256 boosterTokenId, uint256 tokenId, uint256 amount0, uint256 amount1)",
     "function depositNFT(uint256 tokenId) external returns(uint256 boosterTokenId, uint256 poolTokenId, uint256 amount0, uint256 amount1)",
     "function withdraw(uint256 tokenId, address to) external returns(uint256 feeAmount0, uint256 feeAmount1, uint256 total0, uint256 total1)",
+    "function emergencyWithdraw(uint256 tokenId) external returns(uint256 total0, uint256 total1)",
+    "function pause() external",
+    "function unpause() external",
     "event Deposit(address indexed sender, uint256 tokenId0, uint256 tokenId1, uint256 amount0, uint256 amount1)",
     "event DepositNFT(address indexed sender, uint256 tokenId0, uint256 tokenId1)",
-    "event Withdraw(address indexed sender, address indexed to, uint256 tokenId0, uint256 tokenId1, uint256 amount0, uint256 amount1, uint256 feeAmount0, uint256 feeAmount1)"
+    "event Withdraw(address indexed sender, address indexed to, uint256 tokenId0, uint256 tokenId1, uint256 amount0, uint256 amount1, uint256 feeAmount0, uint256 feeAmount1)",
+    "event EmergencyWithdraw(address indexed sender, uint256 tokenId0, uint256 tokenId1, uint256 amount0, uint256 amount1)"
 ]
 
 

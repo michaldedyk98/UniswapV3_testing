@@ -1178,8 +1178,8 @@
       ]
     },
     "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/contracts/UniswapBooster.sol": {
-      "lastModificationDate": 1627628296332,
-      "contentHash": "2beba6cfc024ede14c5912721d5cbc48",
+      "lastModificationDate": 1628143782956,
+      "contentHash": "2e0aaa91a452d429533623921792765c",
       "sourceName": "contracts/Alpha-Vaults/contracts/UniswapBooster.sol",
       "solcConfig": {
         "version": "0.7.6",
@@ -1215,6 +1215,7 @@
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
         "@openzeppelin/contracts/utils/SafeCast.sol",
+        "@openzeppelin/contracts/utils/Pausable.sol",
         "@openzeppelin/contracts/token/ERC721/ERC721.sol",
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/token/ERC20/SafeERC20.sol",
@@ -1428,8 +1429,8 @@
       ]
     },
     "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/interfaces/IUniswapBooster.sol": {
-      "lastModificationDate": 1627480546477,
-      "contentHash": "d9572560c3fc4392571c6739ffd8a9e9",
+      "lastModificationDate": 1628082259677,
+      "contentHash": "1d2c8a7fcc635e1956efaeb1229b9e1d",
       "sourceName": "contracts/Alpha-Vaults/interfaces/IUniswapBooster.sol",
       "solcConfig": {
         "version": "0.7.6",

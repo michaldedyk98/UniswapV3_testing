@@ -202,6 +202,71 @@ const boosterWithdraw = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
+
+// Withdraws all tokens from UniswapBooster (paused only)
+const boosterEmergencyWithdraw = async (req: Request, res: Response, next: NextFunction) => {
+    let tokenId: string = req.body.tokenId;
+
+    if (!(tokenId != null)) {
+        log('boosterEmergencyWithdraw', 'Parameter tokenId is required', req.body, {})
+
+        return res.status(400).json({ message: 'Parameter tokenId is required' });
+    }
+
+    try {
+        const depositResult = await Scenario.BoosterEmergencyWithdraw(
+            BigNumber.from(tokenId),
+        );
+
+        log('boosterEmergencyWithdraw', 'Success', req.body, depositResult)
+
+        return res.status(200).json(depositResult);
+    } catch (err) {
+        log('boosterEmergencyWithdraw', 'Failed to withdraw', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to withdraw',
+            error: err
+        });
+    }
+};
+
+// Pauses booster contract
+const boosterPause = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await Scenario.BoosterPause();
+
+        log('boosterPause', 'Success', req.body, {})
+
+        return res.status(200).json({ message: 'Success' });
+    } catch (err) {
+        log('boosterPause', 'Failed to pause', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to pause',
+            error: err
+        });
+    }
+};
+
+// Pauses booster contract
+const boosterUnpause = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await Scenario.BoosterUnpause();
+
+        log('boosterUnpause', 'Success', req.body, {})
+
+        return res.status(200).json({ message: 'Success' });
+    } catch (err) {
+        log('boosterUnpause', 'Failed to unpause', req.body, err)
+
+        return res.status(500).json({
+            message: 'Failed to unpause',
+            error: err
+        });
+    }
+};
+
 // Withdraws tokens from AlphaVault (and uniswap v3 pool)
 const withdraw = async (req: Request, res: Response, next: NextFunction) => {
     let shares: string = req.body.shares;
@@ -883,6 +948,9 @@ export default {
     boosterDepositNFT,
     boosterDeposit,
     boosterWithdraw,
+    boosterEmergencyWithdraw,
+    boosterUnpause,
+    boosterPause,
     deposit,
     withdraw,
     rebalance,

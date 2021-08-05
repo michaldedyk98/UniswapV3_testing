@@ -6,6 +6,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -27,7 +28,8 @@ contract UniswapBooster is
     ReentrancyGuard,
     Ownable,
     ERC721,
-    IERC721Receiver
+    IERC721Receiver,
+    Pausable
 {
     using TickMath for int24;
     using SafeERC20 for IERC20;
@@ -89,7 +91,7 @@ contract UniswapBooster is
      * @notice Updates booster shares value, owner only
      * @param _shares New shares value
      */
-    function updateShares(uint8 _shares) public onlyOwner {
+    function updateShares(uint8 _shares) public override onlyOwner {
         require(_shares >= MIN_SHARES, "STL");
         require(_shares <= MAX_SHARES, "STH");
 
@@ -126,6 +128,7 @@ contract UniswapBooster is
         external
         override
         nonReentrant
+        whenNotPaused
         returns (
             uint256 boosterTokenId,
             uint256 tokenId,
@@ -209,6 +212,7 @@ contract UniswapBooster is
         external
         override
         nonReentrant
+        whenNotPaused
         returns (
             uint256 boosterTokenId,
             uint256 poolTokenId,
@@ -220,6 +224,17 @@ contract UniswapBooster is
         require(
             nonfungiblePositionManager.ownerOf(tokenId) == msg.sender,
             "owner only"
+        );
+
+        // Check if given tokenId belongs to the pool that booster is in
+        (address _token0, address _token1, uint24 _fee) = _nftToPoolPosition(
+            tokenId
+        );
+        require(
+            _token0 == pool.token0() &&
+                _token1 == pool.token1() &&
+                _fee == pool.fee(),
+            "tokenId does not belong to this pool"
         );
 
         // Transfer NFT token with given tokenId to UniswapBooster
@@ -264,6 +279,7 @@ contract UniswapBooster is
         external
         override
         nonReentrant
+        whenNotPaused
         returns (
             uint256 feeAmount0,
             uint256 feeAmount1,
@@ -310,6 +326,52 @@ contract UniswapBooster is
         );
     }
 
+    /**
+     * @notice Withdraw all tokens in position and balance on booster
+     * @param tokenId Token id to burn
+     * @return total0 Amount of token0 sent to msg.sender
+     * @return total1 Amount of token1 sent to msg.sender
+     */
+    function emergencyWithdraw(uint256 tokenId)
+        external
+        override
+        nonReentrant
+        whenPaused
+        returns (uint256 total0, uint256 total1)
+    {
+        require(tokenId > 0, "invalid token ID");
+        // if given position does not exist throws "owner only", because operator is zero address
+        require(_positions[tokenId].operator == msg.sender, "owner only");
+        BoosterPosition memory position = _positions[tokenId];
+
+        // Burn booster token
+        _burn(tokenId);
+
+        // Remove all liquidity and collect all tokens and fees from position then burn NFT on uniswap
+        (total0, total1) = _emergencyBurnAndCollect(tokenId);
+
+        // Add remaining tokens collected on deposit
+        total0 += position.token0;
+        total1 += position.token1;
+
+        // Transfer tokens back to recipient
+        if (total0 > 0) token0.safeTransfer(msg.sender, total0);
+        if (total1 > 0) token1.safeTransfer(msg.sender, total1);
+
+        // Free storage space
+        delete _positions[tokenId];
+
+        // Emit emergency withdraw event
+        emit EmergencyWithdraw(
+            msg.sender,
+            tokenId,
+            position.tokenId,
+            total0,
+            total1
+        );
+    }
+
+    /// @dev burns position on uniswap position manager and returns number of tokens0, token1 and fees to transfer back to withdrawer
     function _burnAndCalculateReturn(uint256 tokenId)
         internal
         returns (BurnAndCalculateResult memory result)
@@ -334,27 +396,44 @@ contract UniswapBooster is
                 })
             );
 
-        // // scale fees by 110% (MAX_SHARES + position shares)
-        // result.feeAmount0 = FullMath.mulDiv(
-        //     fees0,
-        //     BONUS_BASE + position.shares,
-        //     _scaleTo
-        // );
-        // result.feeAmount1 = FullMath.mulDiv(
-        //     fees1,
-        //     BONUS_BASE + position.shares,
-        //     _scaleTo
-        // );
-
-        // 110% * fees collected + 100% position liquidity + amount taken on deposit (including fees)
-        // result.total0 = (fees0 + amount0) + position.token0;
-        // result.total1 = (fees1 + amount1) + position.token1;
-
         result.total0 = (fees0 + amount0);
         result.total1 = (fees1 + amount1);
         result.feeAmount0 = fees0;
         result.feeAmount1 = fees1;
         result.poolTokenId = position.tokenId;
+    }
+
+    /// @dev in case of emergency burns position on uniswap and withdraws all tokens
+    function _emergencyBurnAndCollect(uint256 tokenId)
+        internal
+        returns (uint256 total0, uint256 total1)
+    {
+        BoosterPosition memory position = _positions[tokenId];
+        (, , uint128 liquidity) = _nftPosition(position.tokenId);
+
+        // Decrease 100% of liquidity from position
+        nonfungiblePositionManager.decreaseLiquidity(
+            INonfungiblePositionManager.DecreaseLiquidityParams({
+                tokenId: tokenId,
+                liquidity: liquidity,
+                amount0Min: 0,
+                amount1Min: 0,
+                deadline: block.timestamp + 30 minutes
+            })
+        );
+
+        // Collect remaining fees and reduced tokens from position
+        (total0, total1) = nonfungiblePositionManager.collect(
+            INonfungiblePositionManager.CollectParams({
+                tokenId: tokenId,
+                recipient: address(this),
+                amount0Max: type(uint128).max,
+                amount1Max: type(uint128).max
+            })
+        );
+
+        // Burns NFT token, applicable only if liquidity, tokensOwed0 and tokensOwed1 are zero
+        nonfungiblePositionManager.burn(position.tokenId);
     }
 
     /**
@@ -428,6 +507,32 @@ contract UniswapBooster is
             tickLower,
             tickUpper,
             liquidity,
+            ,
+            ,
+            ,
+
+        ) = nonfungiblePositionManager.positions(tokenId);
+    }
+
+    /// @dev Returns address of token0 and token1 to which the tokenId position belongs
+    function _nftToPoolPosition(uint256 tokenId)
+        internal
+        view
+        returns (
+            address token0Pool,
+            address token1Pool,
+            uint24 fee
+        )
+    {
+        (
+            ,
+            ,
+            token0Pool,
+            token1Pool,
+            fee,
+            ,
+            ,
+            ,
             ,
             ,
             ,
@@ -568,20 +673,9 @@ contract UniswapBooster is
         if (swapTokens) {
             amount0 *= scaleBase;
             amount1 *= scaleBase;
-
-            console.log("SWAP");
         } else {
             amount0 += position.token0;
             amount1 += position.token1;
-
-            console.log("NO SWAP");
-        }
-
-        {
-            console.log("fess0 %s", fees0);
-            console.log("fees1 %s", fees1);
-            console.log("transferTo token0 %s", amount0 + fees0);
-            console.log("transferTo token1 %s", amount1 + fees1);
         }
 
         // Burns NFT token, applicable only if liquidity, tokensOwed0 and tokensOwed1 are zero
@@ -607,9 +701,6 @@ contract UniswapBooster is
             (params.amount1 + params.fees1) - params.required1
         ) > 0;
 
-        console.log("swapForToken0: %s", swapForToken0);
-        console.log("swapForToken1: %s", swapForToken1);
-
         // No need to swap if both tokens are above 0 or below zero
         bool swapTokens = swapForToken0 != swapForToken1;
 
@@ -626,25 +717,8 @@ contract UniswapBooster is
             tokenIn = token0;
             tokenOut = token1;
         }
-        console.log(
-            "To return %s token0, %s token1",
-            params.required0,
-            params.required1
-        );
 
-        console.log("Swap amount %s tokens", swapAmount);
-        console.log("Amount0 %s", params.amount0);
-        console.log("Amount1 %s", params.amount1);
-
-        console.log(
-            "balanceOf token0 %s before swap",
-            token0.balanceOf(address(this))
-        );
-        console.log(
-            "balanceOf token1 %s before swap",
-            token1.balanceOf(address(this))
-        );
-
+        // Return false if swap was not executed
         if (!(swapAmount > 0 && swapTokens)) return false;
 
         tokenIn.safeApprove(address(swapRouter), type(uint128).max);
@@ -661,23 +735,11 @@ contract UniswapBooster is
                 sqrtPriceLimitX96: 0
             });
 
-        uint256 amountIn = swapRouter.exactOutputSingle(swapParams);
-
-        (, int24 tick, , , , , ) = pool.slot0();
-        console.log("swap amountIn %s ", amountIn);
-        console.log("tick after swap %s ", uint128(tick));
+        // Execute swap
+        swapRouter.exactOutputSingle(swapParams);
 
         // Remove approval for using booster tokens
         tokenIn.safeApprove(address(swapRouter), 0);
-
-        console.log(
-            "balanceOf token0 %s after swap",
-            token0.balanceOf(address(this))
-        );
-        console.log(
-            "balanceOf token1 %s after swap",
-            token1.balanceOf(address(this))
-        );
 
         return true;
     }
@@ -697,5 +759,21 @@ contract UniswapBooster is
                 TickMath.getSqrtRatioAtTick(tickUpper),
                 liquidity
             );
+    }
+
+    /// @dev Overrides _approve and updates operator to new approved address
+    function _approve(address to, uint256 tokenId) internal override(ERC721) {
+        _positions[tokenId].operator = to;
+        emit Approval(ownerOf(tokenId), to, tokenId);
+    }
+
+    /// @notice Pauses contract (the contract must not be paused), owner only
+    function pause() external override onlyOwner {
+        _pause();
+    }
+
+    /// @notice Unpauses contract (the contract must be paused), owner only
+    function unpause() external override onlyOwner {
+        _unpause();
     }
 }

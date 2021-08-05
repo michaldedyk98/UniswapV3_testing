@@ -139,8 +139,8 @@ export class Deployer {
         const rebalanceResult = await AlphaVault1.rebalance(
             0,
             0,
-            -120,
-            120,
+            -6000,
+            6000,
             -180,
             -60,
             180,
@@ -156,6 +156,7 @@ export class Deployer {
         table.push(["AlphaVault1-PassiveStrategy", AVStrategy1.address])
         table.push(["WETH Token", WETHToken.address])
         table.push(["DAI Token", DAIToken.address])
+
         for (const item of Object.keys(uniswapContracts))
             table.push([item, uniswapContracts[item].address]);
 

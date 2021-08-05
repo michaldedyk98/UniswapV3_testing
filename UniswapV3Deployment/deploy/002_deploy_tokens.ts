@@ -1,9 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { defaultSqrtPriceX96, ethDefaultProvider, feeTier, maxGasLimit, token0Decimals, token1Decimals, tokenDefaultBalance } from '../scripts/config/config';
+import { defaultSqrtPriceX96, delay, ethDefaultProvider, feeTier, maxGasLimit, token0Decimals, token1Decimals, tokenDefaultBalance } from '../scripts/config/config';
 import { ethers } from 'hardhat';
 import { Db } from '../utils/Db';
 import { BigNumber } from 'ethers';
+import fs from 'fs';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
@@ -19,22 +20,33 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         log: true,
     });
 
-    const resultDAI = await deploy('DAIToken', {
+    let resultDAI = await deploy('DAIToken', {
         from: keyA.address,
         args: [0, token1Decimals],
         gasLimit: maxGasLimit,
         log: true,
     });
+    var currentPath = process.cwd();
 
-    // while (!BigNumber.from(resultWETH.address).lt(BigNumber.from(resultDAI.address))) {
-    //     resultDAI = await deploy('DAIToken' + i++, {
-    //         contract: 'DAIToken',
-    //         from: keyA.address,
-    //         args: [0, token1Decimals],
-    //         gasLimit: maxGasLimit,
-    //         log: true,
-    //     });
-    // }
+    while (!BigNumber.from(resultWETH.address).lt(BigNumber.from(resultDAI.address))) {
+        const path = require('path').resolve(
+            currentPath,
+            'deployments/local/DAIToken.json'
+        );
+
+        if (fs.existsSync(path))
+            fs.unlinkSync(path);
+
+        await delay(1000);
+
+        resultDAI = await deploy('DAIToken', {
+            contract: 'DAIToken',
+            from: keyA.address,
+            args: [0, token1Decimals],
+            gasLimit: maxGasLimit,
+            log: true,
+        });
+    }
 
     const WETHToken = await ethers.getContractAt('WETHToken', resultWETH.address);
     const DAIToken = await ethers.getContractAt('DAIToken', resultDAI.address);

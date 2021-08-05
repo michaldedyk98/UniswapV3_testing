@@ -693,6 +693,102 @@ export class Scenario {
         }
     }
 
+    static async BoosterPause(
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        try {
+            const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
+
+            const result = await uniswapBooster.connect(keyA).pause(
+                { gasLimit: maxGasLimit }
+            );
+
+            await defaultProvider.waitForTransaction(result.hash);
+
+            return {};
+        } catch (err) {
+            console.log(err);
+
+            throw err;
+        }
+    }
+
+    static async BoosterUnpause(
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        try {
+            const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
+
+            const result = await uniswapBooster.connect(keyA).unpause(
+                { gasLimit: maxGasLimit }
+            );
+
+            await defaultProvider.waitForTransaction(result.hash);
+
+            return {};
+        } catch (err) {
+            console.log(err);
+
+            throw err;
+        }
+    }
+
+    static async BoosterEmergencyWithdraw(
+        tokenId: BigNumberish,
+    ) {
+        let [keyA] = await ethers.getSigners();
+        const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
+        defaultProvider.pollingInterval = 1;
+        let timeoutHandle: NodeJS.Timeout;
+
+        try {
+            const uniswapBooster = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
+
+            const depositPromise = new Promise((resolve, reject) => {
+                uniswapBooster.on("EmergencyWithdraw", (sender, tokenId0, tokenId1, amount0, amount1, event) => {
+
+                    if (event.transactionHash == result?.hash) {
+                        event.removeListener();
+
+                        resolve({
+                            sender: sender.toString(),
+                            boosterTokenId: tokenId1.toString(),
+                            uniswapTokenId: tokenId0.toString(),
+                            amount0: ToDecimal(amount0),
+                            amount1: ToDecimal(amount1),
+                            _amount0: amount0.toString(),
+                            _amount1: amount1.toString(),
+                        });
+                    }
+                });
+
+                timeoutHandle = setTimeout(() => {
+                    reject(new Error('Timeout while waiting for event'));
+                }, 5000);
+            });
+
+            const result = await uniswapBooster.connect(keyA).emergencyWithdraw(
+                tokenId,
+                { gasLimit: maxGasLimit }
+            );
+
+            const proof = await defaultProvider.waitForTransaction(result.hash);
+            const depositResult: any = await depositPromise;
+            depositResult.gasUsed = proof.gasUsed.toString()
+
+            return depositResult;
+        } catch (err) {
+            console.log(err);
+
+            if (timeoutHandle!)
+                clearInterval(timeoutHandle!)
+
+            throw err;
+        }
+    }
+
     static async Withdraw(shares: BigNumberish, amount0Min: BigNumberish = 0, amount1Min: BigNumberish = 0, vault: number) {
         let [keyA] = await ethers.getSigners();
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);

@@ -34,7 +34,7 @@ interface IUniswapBooster {
     /**
      * @notice Emitted on successful withdraw
      * @param sender Address of withdrawing account
-     * @param sender Address of account receiving tokens
+     * @param to Address of account receiving tokens
      * @param tokenId0 token id of position in pool
      * @param tokenId1 token id of position in uniswap booster contract
      * @param amount0 number of total token0 withdrawn
@@ -51,6 +51,22 @@ interface IUniswapBooster {
         uint256 amount1,
         uint256 feeAmount0,
         uint256 feeAmount1
+    );
+
+    /**
+     * @notice Emitted on successful emergency withdraw
+     * @param sender Address of withdrawing account
+     * @param tokenId0 token id of position in pool
+     * @param tokenId1 token id of position in uniswap booster contract
+     * @param amount0 number of total token0 withdrawn
+     * @param amount1 number of total token1 withdrawn
+     */
+    event EmergencyWithdraw(
+        address indexed sender,
+        uint256 tokenId0,
+        uint256 tokenId1,
+        uint256 amount0,
+        uint256 amount1
     );
 
     // details about the position in uniswap booster
@@ -140,4 +156,14 @@ interface IUniswapBooster {
             uint128 tokensOwed0,
             uint128 tokensOwed1
         );
+
+    function updateShares(uint8 _shares) external;
+
+    function pause() external;
+
+    function unpause() external;
+
+    function emergencyWithdraw(uint256 tokenId)
+        external
+        returns (uint256 total0, uint256 total1);
 }
