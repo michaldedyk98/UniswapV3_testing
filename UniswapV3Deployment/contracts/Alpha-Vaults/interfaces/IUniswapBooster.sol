@@ -69,6 +69,12 @@ interface IUniswapBooster {
         uint256 amount1
     );
 
+    // Available types of swaps that booster can execute
+    enum SwapType {
+        SwapExactOutput,
+        SwapExactInput
+    }
+
     // details about the position in uniswap booster
     struct BoosterPosition {
         // token id in uniswap pool
@@ -90,13 +96,21 @@ interface IUniswapBooster {
         int24 tickLower;
         int24 tickUpper;
         uint128 liquidity;
+        address to;
+    }
+
+    struct BurnAndCollectResult {
+        uint256 fees0;
+        uint256 fees1;
+        uint256 amount0;
+        uint256 amount1;
     }
 
     struct SwapParams {
+        uint256 positionBalance0;
+        uint256 positionBalance1;
         uint256 required0;
         uint256 required1;
-        uint256 amount0;
-        uint256 amount1;
         uint256 fees0;
         uint256 fees1;
         uint256 scaleBase;
@@ -115,20 +129,6 @@ interface IUniswapBooster {
         returns (
             uint256 boosterTokenId,
             uint256 poolTokenId,
-            uint256 amount0,
-            uint256 amount1
-        );
-
-    function deposit(
-        int24 baseLower,
-        int24 baseUpper,
-        uint256 amount0Desired,
-        uint256 amount1Desired
-    )
-        external
-        returns (
-            uint256 boosterTokenId,
-            uint256 tokenId,
             uint256 amount0,
             uint256 amount1
         );

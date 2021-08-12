@@ -43,6 +43,7 @@ import { CurrencyAmount, Token, Price, Currency } from '@uniswap/sdk-core'
 import { TickMath, tickToPrice, priceToClosestTick, Pool, FullMath } from '@uniswap/v3-sdk'
 import { Decimal } from 'decimal.js';
 import { addContract, getContract, getContracts } from "./config/contracts";
+import { npm } from "winston/lib/winston/config";
 
 var Fraction = require('fractional').Fraction
 
@@ -220,6 +221,7 @@ export class Scenario {
         defaultProvider.pollingInterval = 1;
 
         let timeoutHandle: NodeJS.Timeout;
+        let listener: any;
 
         try {
             const recipientAddress = await keyA.getAddress();
@@ -227,7 +229,7 @@ export class Scenario {
             const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
 
             const snapshotPromise = new Promise((resolve, reject) => {
-                npm.on("IncreaseLiquidity", (tokenId, liquidity, amount0, amount1, event) => {
+                listener = (tokenId: any, liquidity: any, amount0: any, amount1: any, event: any) => {
                     if (event.transactionHash == result?.hash) {
                         event.removeListener();
 
@@ -238,7 +240,9 @@ export class Scenario {
                             amount1: amount1.toString(),
                         });
                     }
-                });
+                };
+
+                npm.on("IncreaseLiquidity", listener);
 
                 timeoutHandle = setTimeout(() => {
                     reject(new Error('Timeout while waiting for event'));
@@ -268,6 +272,9 @@ export class Scenario {
 
             if (timeoutHandle!)
                 clearInterval(timeoutHandle!)
+
+            const npm = new ethers.Contract(getContract('nonfungiblePositionManagerAddress'), nonfungiblePositionManagerABI, defaultProvider);
+            npm.removeListener("IncreaseLiquidity", listener!);
 
             throw err;
         }
@@ -1284,11 +1291,13 @@ export class Scenario {
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
         const wethToken = new ethers.Contract(getContract('WETH')!, ERC20TokenABI, defaultProvider);
         const daiToken = new ethers.Contract(getContract('DAI')!, ERC20TokenABI, defaultProvider);
+        const npm = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
 
         const resultWETH = await wethToken.connect(keyA).balanceOf(keyA.address);
         const resultDAI = await daiToken.connect(keyA).balanceOf(keyA.address);
         const resultPoolWETH = await wethToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
         const resultPoolDAI = await daiToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
+        const boosterProtocolBalance1 = await npm.connect(keyA).boosterProtocolBalance1();
         const resultBoosterWETH = await wethToken.connect(keyA).balanceOf(getContract('uniswapBooster'));
         const resultBoosterDAI = await daiToken.connect(keyA).balanceOf(getContract('uniswapBooster'));
 
@@ -1299,12 +1308,15 @@ export class Scenario {
             token1BalancePool: ToDecimal(resultPoolDAI),
             token0Booster: ToDecimal(resultBoosterWETH),
             token1Booster: ToDecimal(resultBoosterDAI),
+            boosterProtocolBalance1: ToDecimal(boosterProtocolBalance1),
+
             _token0Balance: (resultWETH).toString(),
             _token1Balanace: (resultDAI).toString(),
             _token0BalancePool: (resultPoolWETH).toString(),
             _token1BalancePool: (resultPoolDAI).toString(),
             _token0Booster: (resultBoosterWETH).toString(),
             _token1Booster: (resultBoosterDAI).toString(),
+            _boosterProtocolBalance1: (boosterProtocolBalance1).toString(),
         };
     }
 

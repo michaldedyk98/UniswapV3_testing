@@ -10,7 +10,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -56,7 +56,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -105,7 +105,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -147,7 +147,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -203,7 +203,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -245,7 +245,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -287,7 +287,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -329,7 +329,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -371,7 +371,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -413,7 +413,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -455,7 +455,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -497,7 +497,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -539,7 +539,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -585,7 +585,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -627,7 +627,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -673,7 +673,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -715,7 +715,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -757,7 +757,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -799,7 +799,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -844,7 +844,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -886,7 +886,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -928,7 +928,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -970,7 +970,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1012,7 +1012,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1054,7 +1054,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1096,7 +1096,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1144,7 +1144,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1178,15 +1178,15 @@
       ]
     },
     "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/contracts/UniswapBooster.sol": {
-      "lastModificationDate": 1628143782956,
-      "contentHash": "2e0aaa91a452d429533623921792765c",
+      "lastModificationDate": 1628581148037,
+      "contentHash": "b17d450a78e5206f2107f6442dcd0201",
       "sourceName": "contracts/Alpha-Vaults/contracts/UniswapBooster.sol",
       "solcConfig": {
         "version": "0.7.6",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1213,6 +1213,7 @@
       },
       "imports": [
         "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/math/SafeMath.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
         "@openzeppelin/contracts/utils/SafeCast.sol",
         "@openzeppelin/contracts/utils/Pausable.sol",
@@ -1224,7 +1225,6 @@
         "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol",
         "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol",
         "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol",
-        "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol",
         "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol",
         "@uniswap/v3-core/contracts/libraries/TickMath.sol",
         "@uniswap/v3-core/contracts/libraries/FullMath.sol",
@@ -1247,7 +1247,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1291,7 +1291,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1345,7 +1345,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1387,7 +1387,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1429,15 +1429,15 @@
       ]
     },
     "/Users/michaldedyk/Documents/Projects/UniswapV3_testing/UniswapV3Deployment/contracts/Alpha-Vaults/interfaces/IUniswapBooster.sol": {
-      "lastModificationDate": 1628082259677,
-      "contentHash": "1d2c8a7fcc635e1956efaeb1229b9e1d",
+      "lastModificationDate": 1628504026123,
+      "contentHash": "7cc684a358cebbc7aba20ec7b6500b78",
       "sourceName": "contracts/Alpha-Vaults/interfaces/IUniswapBooster.sol",
       "solcConfig": {
         "version": "0.7.6",
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1479,7 +1479,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1523,7 +1523,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1567,7 +1567,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1611,7 +1611,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1655,7 +1655,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1697,7 +1697,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1739,7 +1739,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1781,7 +1781,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1823,7 +1823,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1865,7 +1865,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1909,7 +1909,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1951,7 +1951,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -1993,7 +1993,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2035,7 +2035,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2081,7 +2081,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2125,7 +2125,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2170,7 +2170,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2215,7 +2215,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2263,7 +2263,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2307,7 +2307,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2351,7 +2351,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2393,7 +2393,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2437,7 +2437,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {
@@ -2479,7 +2479,7 @@
         "settings": {
           "optimizer": {
             "enabled": true,
-            "runs": 200
+            "runs": 100
           },
           "outputSelection": {
             "*": {

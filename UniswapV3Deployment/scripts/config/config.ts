@@ -132,6 +132,7 @@ export const ERC20TokenABI = [
 
 /** UniswapBooster ABI */
 export const uniswapBoosterABI = [
+    "function boosterProtocolBalance1() external view returns(uint256)",
     "function positions(uint256 tokenId) public view returns(address operator, uint8 uniswapShares, uint256 amount0, uint256 amount1, int24 tickLower, int24 tickUpper, uint128 liquidity, uint128 tokensOwed0, uint128 tokensOwed1)",
     "function deposit(int24 baseLower, int24 baseUpper, uint256 amount0Desired, uint256 amount1Desired) external returns(uint256 boosterTokenId, uint256 tokenId, uint256 amount0, uint256 amount1)",
     "function depositNFT(uint256 tokenId) external returns(uint256 boosterTokenId, uint256 poolTokenId, uint256 amount0, uint256 amount1)",

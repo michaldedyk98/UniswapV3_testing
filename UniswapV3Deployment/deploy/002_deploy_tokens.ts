@@ -9,7 +9,7 @@ import fs from 'fs';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
     const { deployments } = hre;
-    const { deploy } = deployments;
+    const { deploy, get } = deployments;
 
     const [keyA, keyB] = await ethers.getSigners();
 
@@ -28,7 +28,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
     var currentPath = process.cwd();
 
-    while (!BigNumber.from(resultWETH.address).lt(BigNumber.from(resultDAI.address))) {
+    let deploymentId = 1;
+
+    while (!BigNumber.from(resultWETH.address).gt(BigNumber.from(resultDAI.address))) {
         const path = require('path').resolve(
             currentPath,
             'deployments/local/DAIToken.json'
@@ -37,15 +39,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         if (fs.existsSync(path))
             fs.unlinkSync(path);
 
-        await delay(1000);
+        await delay(100);
 
-        resultDAI = await deploy('DAIToken', {
+        resultDAI = await deploy('DAIToken' + deploymentId++, {
             contract: 'DAIToken',
             from: keyA.address,
             args: [0, token1Decimals],
             gasLimit: maxGasLimit,
             log: true,
         });
+    }
+
+    if (deploymentId != 1) {
+        const path = require('path').resolve(
+            currentPath,
+            `deployments/local/DAIToken${deploymentId - 1}.json`
+        );
+
+        const pathNew = require('path').resolve(
+            currentPath,
+            'deployments/local/DAIToken.json'
+        );
+
+        fs.renameSync(path, pathNew);
     }
 
     const WETHToken = await ethers.getContractAt('WETHToken', resultWETH.address);
