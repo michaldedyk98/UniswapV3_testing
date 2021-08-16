@@ -1,8 +1,8 @@
 import { alphaVaultDeposit, alphaVaultRebalanceAmount, baseThreshold, defaultSqrtPriceX96, delay, durationTWAP, ethDefaultProvider, feeTier, g, limitThreshold, maxGasLimit, maxTotalSupply, maxTWAPDeviation, MAX_TICK, minTickMove, MIN_TICK, periodAlphaVault, poolABI, protocolFee, r, swapRouterABI, swapRouterMaximumIn, token0Decimals, token1Decimals, tokenDefaultBalance, w } from "../config/config";
 import Table from "cli-table3";
 import { UniswapV3Deployer } from "../util/UniswapV3Deployer";
-import { client } from "../config/db";
 import { BigNumber } from '@ethersproject/bignumber';
+import { Db } from "../../utils/Db";
 
 export class Deployer {
     static async deployContractsLocal(ethers: any) {
@@ -162,7 +162,6 @@ export class Deployer {
 
         console.info(table.toString());
 
-        await client.connect()
         var format = require('pg-format');
 
         var values = [
@@ -180,16 +179,13 @@ export class Deployer {
             ['DAI', DAIToken.address],
         ];
 
-        await client.query(`DELETE FROM contracts;`)
+        await Db.deleteContracts();
+        await Db.updateContracts(values);
 
-        await client.query(format(`
-      INSERT INTO contracts (contract, address)
-        VALUES %L
-        ON CONFLICT (contract) DO UPDATE
-          SET contract = excluded.contract,
-              address = excluded.address;
-      `, values))
+        return values;
+    }
 
-        await client.end();
+    static async deployLimitOrderProtocol() {
+
     }
 }

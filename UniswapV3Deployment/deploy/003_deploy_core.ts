@@ -9,13 +9,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments } = hre;
     const { deploy } = deployments;
 
+    const contracts = await Db.getContracts();
     const [keyA, keyB] = await ethers.getSigners();
 
     const factoryABI = (await deployments.getArtifact('UniswapV3Factory')).abi
     const uniswapFactory = await ethers.getContractAt(factoryABI, (await deployments.get('UniswapV3Factory')).address)
 
-    const WETHAddress = (await deployments.get('WETHToken')).address
-    const DAIAddress = (await deployments.get('DAIToken')).address
+    const WETHAddress = contracts["WETH"].address
+    const DAIAddress = contracts["DAI"].address
 
     const uniswapPoolAddress = await uniswapFactory.getPool(
         WETHAddress,
@@ -24,6 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
     const positionManagerAddress = (await deployments.get('NonfungiblePositionManager')).address
     const swapRouterAddress = (await deployments.get('SwapRouter')).address
+
     const resultBooster = await deploy('UniswapBooster', {
         from: keyA.address,
         args: [positionManagerAddress, swapRouterAddress, uniswapPoolAddress, feeTier, 10],

@@ -2,18 +2,19 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { maxGasLimit } from '../scripts/config/config';
 import { ethers } from 'hardhat';
-import { dbConfig } from '../scripts/config/db';
-import { Client } from 'pg';
 import { Db } from '../utils/Db';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments } = hre;
     const { deploy } = deployments;
 
-    const client: Client = new Client(dbConfig);
-
     // Remove all contracts from db
     await Db.deleteContracts();
+
+    // await hre.network.provider.request({
+    //     method: "hardhat_reset",
+    //     params: [],
+    // });
 
     const [keyA] = await ethers.getSigners();
 

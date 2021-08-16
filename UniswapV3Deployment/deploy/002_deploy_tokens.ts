@@ -30,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let deploymentId = 1;
 
-    while (!BigNumber.from(resultWETH.address).gt(BigNumber.from(resultDAI.address))) {
+    if (!BigNumber.from(resultWETH.address).lt(BigNumber.from(resultDAI.address))) {
         const path = require('path').resolve(
             currentPath,
             'deployments/local/DAIToken.json'
@@ -38,6 +38,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         if (fs.existsSync(path))
             fs.unlinkSync(path);
+    }
+
+    while (!BigNumber.from(resultWETH.address).lt(BigNumber.from(resultDAI.address))) {
+        const pathDeploymentPrevious = require('path').resolve(
+            currentPath,
+            `deployments/local/DAIToken${deploymentId - 1}.json`
+        );
+
+        if (fs.existsSync(pathDeploymentPrevious))
+            fs.unlinkSync(pathDeploymentPrevious);
 
         await delay(100);
 
@@ -67,8 +77,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const WETHToken = await ethers.getContractAt('WETHToken', resultWETH.address);
     const DAIToken = await ethers.getContractAt('DAIToken', resultDAI.address);
 
-    await WETHToken.connect(keyA).mint(keyA.address, tokenDefaultBalance);
-    await DAIToken.connect(keyA).mint(keyA.address, tokenDefaultBalance);
+    const keyBBalance = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18));
+
+    await WETHToken.connect(keyA).mint(keyA.address, tokenDefaultBalance.mul(2).add(keyBBalance));
+    await DAIToken.connect(keyA).mint(keyA.address, tokenDefaultBalance.mul(2).add(keyBBalance));
+
+    await WETHToken.connect(keyA).transfer(keyB.address, keyBBalance);
+    await DAIToken.connect(keyA).transfer(keyB.address, keyBBalance);
 
     await WETHToken.connect(keyA).approve((await deployments.get('NonfungiblePositionManager')).address, tokenDefaultBalance.mul(1000));
     await DAIToken.connect(keyA).approve((await deployments.get('NonfungiblePositionManager')).address, tokenDefaultBalance.mul(1000));
@@ -83,9 +98,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const token0 = WETHToken.address;
     const token1 = DAIToken.address;
 
+    console.log((await deployments.get('NonfungiblePositionManager')).address);
+
     const result = await positionManager.connect(keyA).createAndInitializePoolIfNecessary(
-        token1,
         token0,
+        token1,
         feeTier,
         defaultSqrtPriceX96,
         { gasLimit: maxGasLimit }

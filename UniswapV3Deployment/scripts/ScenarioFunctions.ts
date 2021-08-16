@@ -1287,14 +1287,16 @@ export class Scenario {
     }
 
     static async BalanceOf() {
-        const [keyA] = await ethers.getSigners();
+        const [keyA, keyB] = await ethers.getSigners();
         const defaultProvider = ethers.getDefaultProvider(ethDefaultProvider);
         const wethToken = new ethers.Contract(getContract('WETH')!, ERC20TokenABI, defaultProvider);
         const daiToken = new ethers.Contract(getContract('DAI')!, ERC20TokenABI, defaultProvider);
         const npm = new ethers.Contract(getContract('uniswapBooster'), uniswapBoosterABI, defaultProvider);
 
-        const resultWETH = await wethToken.connect(keyA).balanceOf(keyA.address);
-        const resultDAI = await daiToken.connect(keyA).balanceOf(keyA.address);
+        const resultWETH0 = await wethToken.connect(keyA).balanceOf(keyA.address);
+        const resultDAI0 = await daiToken.connect(keyA).balanceOf(keyA.address);
+        const resultWETH1 = await wethToken.connect(keyA).balanceOf(keyB.address);
+        const resultDAI1 = await daiToken.connect(keyA).balanceOf(keyB.address);
         const resultPoolWETH = await wethToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
         const resultPoolDAI = await daiToken.connect(keyA).balanceOf(getContract('defaultPoolAddress'));
         const boosterProtocolBalance1 = await npm.connect(keyA).boosterProtocolBalance1();
@@ -1302,16 +1304,20 @@ export class Scenario {
         const resultBoosterDAI = await daiToken.connect(keyA).balanceOf(getContract('uniswapBooster'));
 
         return {
-            token0Balance: ToDecimal(resultWETH),
-            token1Balanace: ToDecimal(resultDAI),
+            token0Balance0: ToDecimal(resultWETH0),
+            token1Balanace0: ToDecimal(resultDAI0),
+            token0Balance1: ToDecimal(resultWETH1),
+            token1Balanace1: ToDecimal(resultDAI1),
             token0BalancePool: ToDecimal(resultPoolWETH),
             token1BalancePool: ToDecimal(resultPoolDAI),
             token0Booster: ToDecimal(resultBoosterWETH),
             token1Booster: ToDecimal(resultBoosterDAI),
             boosterProtocolBalance1: ToDecimal(boosterProtocolBalance1),
 
-            _token0Balance: (resultWETH).toString(),
-            _token1Balanace: (resultDAI).toString(),
+            _token0Balance0: (resultWETH0).toString(),
+            _token1Balanace0: (resultDAI0).toString(),
+            _token0Balance1: (resultWETH1).toString(),
+            _token1Balanace1: (resultDAI1).toString(),
             _token0BalancePool: (resultPoolWETH).toString(),
             _token1BalancePool: (resultPoolDAI).toString(),
             _token0Booster: (resultBoosterWETH).toString(),

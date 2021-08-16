@@ -14,6 +14,14 @@ task("deploy-local", "UniswapV3 local deployment")
     await Deployer.deployContractsLocal(ethers);
   });
 
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
+
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
+
 module.exports = {
   solidity: {
     compilers:
@@ -27,7 +35,30 @@ module.exports = {
             }
           },
         },
+        {
+          version: "0.8.0",
+          settings: {
+            optimizer: {
+              enabled: true,
+              runs: 100
+            }
+          },
+        },
       ],
+    overrides: {
+      "@uniswap/v3-core/contracts/libraries/FullMath.sol": {
+        version: "0.7.6",
+        settings: {}
+      },
+      "@uniswap/v3-core/contracts/libraries/TickMath.sol": {
+        version: "0.7.6",
+        settings: {}
+      },
+      "@uniswap/v3-periphery/contracts/libraries/PoolAddress.sol": {
+        version: "0.7.6",
+        settings: {}
+      }
+    }
   },
   networks: {
     local: {
@@ -35,7 +66,7 @@ module.exports = {
       chainId: 31337,
       live: false,
       saveDeployments: true,
-      tags: ["local"]
+      tags: ["local"],
     },
   },
   tenderly: {

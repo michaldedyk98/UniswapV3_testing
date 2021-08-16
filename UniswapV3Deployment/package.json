@@ -28,7 +28,8 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.4.1",
+    "@openzeppelin/contracts": "^3.4.0",
+    "@openzeppelin/contracts_v42": "npm:@openzeppelin/contracts@^4.2.0",
     "@tenderly/hardhat-tenderly": "^1.0.12",
     "@types/axios": "^0.14.0",
     "@types/cron": "^1.7.3",

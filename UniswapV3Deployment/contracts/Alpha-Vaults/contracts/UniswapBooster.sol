@@ -294,40 +294,42 @@ contract UniswapBooster is
         )
     {
         require(tokenId > 0, "INV_ID");
-        // if given position does not exist throws "owner only", because operator is address zero
-        require(_positions[tokenId].operator == msg.sender, "OWNER");
+        require(
+            nonfungiblePositionManager.ownerOf(tokenId) == msg.sender,
+            "OWNER"
+        );
         require(to != address(0) && to != address(this), "INV_ADDR");
 
         // Calculates token0 and token1 fees and total return value of token0 and token1
         // Prevents stack too deep error caused by too many local variables in current scope
-        try _burnAndCalculateReturn(tokenId, to) returns (
-            BurnAndCalculateResult memory result
-        ) {
-            console.log("SUCCESS");
+        // try _burnAndCalculateReturn(tokenId, to) returns (
+        //     BurnAndCalculateResult memory result
+        // ) {
+        //     console.log("SUCCESS");
 
-            // Emit withdraw event
-            emit Withdraw(
-                msg.sender,
-                to,
-                tokenId,
-                result.poolTokenId,
-                result.total0,
-                result.total1,
-                result.feeAmount0,
-                result.feeAmount1
-            );
+        //     // Emit withdraw event
+        //     emit Withdraw(
+        //         msg.sender,
+        //         to,
+        //         tokenId,
+        //         result.poolTokenId,
+        //         result.total0,
+        //         result.total1,
+        //         result.feeAmount0,
+        //         result.feeAmount1
+        //     );
 
-            return (
-                result.feeAmount0,
-                result.feeAmount1,
-                result.total0,
-                result.total1
-            );
-        } catch (string memory reason) {
-            console.log(reason);
+        //     return (
+        //         result.feeAmount0,
+        //         result.feeAmount1,
+        //         result.total0,
+        //         result.total1
+        //     );
+        // } catch (string memory reason) {
+        //     console.log(reason);
 
-            _pause();
-        }
+        //     _pause();
+        // }
         //BurnAndCalculateResult memory result = _burnAndCalculateReturn(tokenId);
 
         // // Free storage space
@@ -348,8 +350,10 @@ contract UniswapBooster is
         returns (uint256 total0, uint256 total1)
     {
         require(tokenId > 0, "INV_ID");
-        // if given position does not exist throws "owner only", because operator is zero address
-        require(_positions[tokenId].operator == msg.sender, "OWNER");
+        require(
+            nonfungiblePositionManager.ownerOf(tokenId) == msg.sender,
+            "OWNER"
+        );
         BoosterPosition memory position = _positions[tokenId];
 
         // Burn booster token
@@ -379,7 +383,7 @@ contract UniswapBooster is
         );
     }
 
-    /// @dev burns position on uniswap position manager and returns number of tokens0, token1 and fees to transfer back to withdrawer
+    /// @dev burns position NFT and returns number of tokens0, token1 and fees to transfer back to withdrawer
     function _burnAndCalculateReturn(uint256 tokenId, address to)
         internal
         returns (BurnAndCalculateResult memory result)
@@ -473,7 +477,10 @@ contract UniswapBooster is
     {
         BoosterPosition memory position = _positions[tokenId];
         require(position.tokenId > 0, "INV_ID");
-        require(position.operator == msg.sender, "OWNER");
+        require(
+            nonfungiblePositionManager.ownerOf(tokenId) == msg.sender,
+            "OWNER"
+        );
 
         (
             ,
@@ -925,11 +932,11 @@ contract UniswapBooster is
             );
     }
 
-    /// @dev Overrides _approve and updates operator to new approved address
-    function _approve(address to, uint256 tokenId) internal override(ERC721) {
-        _positions[tokenId].operator = to;
-        emit Approval(ownerOf(tokenId), to, tokenId);
-    }
+    // /// @dev Overrides _approve and updates operator to new approved address
+    // function _approve(address to, uint256 tokenId) internal override(ERC721) {
+    //     _positions[tokenId].operator = to;
+    //     emit Approval(ownerOf(tokenId), to, tokenId);
+    // }
 
     /// @notice Pauses contract (the contract must not be paused), owner only
     function pause() external override onlyOwner {

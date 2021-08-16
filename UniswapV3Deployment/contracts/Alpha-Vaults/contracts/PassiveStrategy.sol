@@ -235,7 +235,7 @@ contract PassiveStrategy is IStrategy {
     }
 
     /// @dev Uses same governance as underlying vault.
-    modifier onlyGovernance {
+    modifier onlyGovernance() {
         require(msg.sender == vault.governance(), "governance");
         _;
     }

@@ -726,7 +726,7 @@ contract AlphaVault is
         governance = msg.sender;
     }
 
-    modifier onlyGovernance {
+    modifier onlyGovernance() {
         require(msg.sender == governance, "governance");
         _;
     }

@@ -1,3 +1,4 @@
+import { keyBy } from "lodash";
 import { Client } from "pg";
 import { dbConfig } from "../scripts/config/db";
 var format = require('pg-format');
@@ -25,5 +26,16 @@ export class Db {
     await client.connect()
     await client.query(`DELETE FROM contracts;`)
     await client.end()
+  }
+
+  static async getContracts() {
+    const client: Client = new Client(dbConfig);
+
+    await client.connect()
+    const result = await client.query('SELECT * FROM contracts')
+    const resultKeyBy = keyBy(result.rows, 'contract');
+    await client.end()
+
+    return resultKeyBy;
   }
 }
