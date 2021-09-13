@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.0",
-    "@openzeppelin/contracts_v42": "npm:@openzeppelin/contracts@^4.2.0",
     "@tenderly/hardhat-tenderly": "^1.0.12",
     "@types/axios": "^0.14.0",
     "@types/cron": "^1.7.3",
@@ -50,6 +49,7 @@
     "fractional": "^1.0.0",
     "hardhat-contract-sizer": "^2.0.3",
     "jsbi": "^3.1.5",
+    "lldex_core": "file:../../LLDEX/LLDEX-Core",
     "lodash": "^4.17.21",
     "lodash.keyby": "^4.6.0",
     "morgan": "^1.10.0",

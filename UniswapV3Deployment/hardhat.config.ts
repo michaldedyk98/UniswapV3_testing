@@ -90,6 +90,9 @@ module.exports = {
         artifacts: "node_modules/@uniswap/v3-periphery/artifacts",
       },
       {
+        artifacts: "node_modules/lldex_core/artifacts",
+      },
+      {
         artifacts: "./scripts/util",
       }
     ],

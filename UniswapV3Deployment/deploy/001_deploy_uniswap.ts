@@ -11,11 +11,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // Remove all contracts from db
     await Db.deleteContracts();
 
-    // await hre.network.provider.request({
-    //     method: "hardhat_reset",
-    //     params: [],
-    // });
-
     const [keyA] = await ethers.getSigners();
 
     const resultWETH9 = await deploy('WETH9', {

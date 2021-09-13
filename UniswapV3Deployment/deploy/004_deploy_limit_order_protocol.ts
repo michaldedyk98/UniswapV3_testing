@@ -24,7 +24,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const WETHToken = await ethers.getContractAt('WETHToken', WETHAddress);
     const DAIToken = await ethers.getContractAt('DAIToken', DAIAddress);
 
-
     await WETHToken.connect(keyA).approve(limitOrderProtocol.address, tokenDefaultBalance);
     await DAIToken.connect(keyA).approve(limitOrderProtocol.address, tokenDefaultBalance);
 

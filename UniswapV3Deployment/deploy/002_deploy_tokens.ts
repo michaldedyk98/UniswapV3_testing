@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { defaultSqrtPriceX96, delay, ethDefaultProvider, feeTier, maxGasLimit, token0Decimals, token1Decimals, tokenDefaultBalance } from '../scripts/config/config';
+import { defaultSqrtPriceX96, delay, ethDefaultProvider, feeTier, lldexTokenDecimals, maxGasLimit, token0Decimals, token1Decimals, tokenDefaultBalance } from '../scripts/config/config';
 import { ethers } from 'hardhat';
 import { Db } from '../utils/Db';
 import { BigNumber } from 'ethers';
@@ -12,6 +12,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy, get } = deployments;
 
     const [keyA, keyB] = await ethers.getSigners();
+
+    const resultLLDEX = await deploy('LLDEXToken', {
+        from: keyA.address,
+        args: [0, lldexTokenDecimals],
+        gasLimit: maxGasLimit,
+        log: true,
+    });
 
     const resultWETH = await deploy('WETHToken', {
         from: keyA.address,
@@ -76,14 +83,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const WETHToken = await ethers.getContractAt('WETHToken', resultWETH.address);
     const DAIToken = await ethers.getContractAt('DAIToken', resultDAI.address);
+    const LLDEXToken = await ethers.getContractAt('LLDEXToken', resultLLDEX.address);
 
     const keyBBalance = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18));
 
     await WETHToken.connect(keyA).mint(keyA.address, tokenDefaultBalance.mul(2).add(keyBBalance));
     await DAIToken.connect(keyA).mint(keyA.address, tokenDefaultBalance.mul(2).add(keyBBalance));
+    await LLDEXToken.connect(keyA).mint(keyA.address, tokenDefaultBalance.mul(2).add(keyBBalance));
 
     await WETHToken.connect(keyA).transfer(keyB.address, keyBBalance);
     await DAIToken.connect(keyA).transfer(keyB.address, keyBBalance);
+    await LLDEXToken.connect(keyA).transfer(keyB.address, keyBBalance);
 
     await WETHToken.connect(keyA).approve((await deployments.get('NonfungiblePositionManager')).address, tokenDefaultBalance.mul(1000));
     await DAIToken.connect(keyA).approve((await deployments.get('NonfungiblePositionManager')).address, tokenDefaultBalance.mul(1000));
@@ -119,6 +129,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ['defaultPoolAddress', uniswapPoolAddress],
         ['WETH', resultWETH.address],
         ['DAI', resultDAI.address],
+        ['LLDEX', resultLLDEX.address]
     ];
 
     await Db.updateContracts(values);

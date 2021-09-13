@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Token } from '@uniswap/sdk-core';
 import { FeeAmount } from '../util/v3-periphery/constants';
 
+export const lldexTokenDecimals: number = 18
 export const token0Decimals: number = 18        // Token0 decimals
 export const token1Decimals: number = 18        // Token1 decimals
 export const feeTier: number = 3000             // UniswapV3Pool fee tier - 0.3%
