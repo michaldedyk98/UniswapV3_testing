@@ -35,6 +35,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ];
 
     await Db.updateContracts(values);
+    await Db.getContracts();
 };
 export default func;
 func.tags = ['LimitOrderProtocol'];
